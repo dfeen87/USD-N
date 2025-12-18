@@ -134,6 +134,32 @@ This specification defines a **real, executable monetary protocol**.
 
 ---
 
+## Cryptographic Finality
+
+USD-N maintains an append-only, hash-chained event log.
+
+Each event cryptographically commits to the previous event, forming an
+immutable history. Any modification invalidates all subsequent state.
+
+Independent parties may replay the event log to reconstruct total supply
+and verify protocol compliance.
+
+## Economic Attachment
+
+USD-N enforces reserve coverage through external attestations.
+
+The protocol:
+- Does not custody assets
+- Does not price reserves
+- Does not validate legal claims
+
+It enforces only that issued supply does not exceed attested reserve value.
+
+This separation preserves protocol neutrality while enabling real-world
+economic anchoring.
+
+---
+
 ## License
 
 MIT License  
