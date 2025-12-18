@@ -19,6 +19,8 @@ USD-N is governed by the **FIDES Protocol** — a rule-based fiscal system that 
 inflation control, debt discipline, and transparency through immutable code rather than
 discretionary policy.
 
+Non-legal-tender. Protocol definition only. Custody and deployment are out of scope.
+
 ---
 
 ## Design Principles
