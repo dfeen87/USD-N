@@ -2,13 +2,13 @@
   "name": "usd-n",
   "version": "0.1.0",
   "private": true,
-  "description": "USD-N reference implementation (simulation + invariants).",
+  "description": "USD-N core protocol implementation with deterministic issuance, reserve enforcement, and replay verification.",
   "license": "MIT",
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
-    "sim": "node dist/cli/sim.js",
+    "verify": "node dist/cli/verify.js",
     "dev": "tsc -w -p tsconfig.json"
   },
   "devDependencies": {
