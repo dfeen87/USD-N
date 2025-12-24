@@ -14,12 +14,11 @@ export function assertStepLimit(kind: "ISSUE" | "BURN", amount: USDN): void {
   }
 }
 
-export function reserveCoverageBps(snapshot: ReserveSnapshot, supply: USDN): number {
-  if (supply === 0n) return 10_000;
+export function reserveCoverageBps(snapshot: ReserveSnapshot, supply: USDN): bigint {
+  if (supply === 0n) return 10_000n;
   // coverage = reserves / supply
   // both in cents => ratio in bps
-  const cov = Number((snapshot.total_value_usd * 10_000n) / supply);
-  return cov;
+  return (snapshot.total_value_usd * 10_000n) / supply;
 }
 
 export function assertReserveCoverage(snapshot: ReserveSnapshot, supply: USDN): void {
