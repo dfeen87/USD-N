@@ -12,5 +12,5 @@ export const CONFIG = {
   lower_cpi_yoy_bps:  150,       // <1.50%: expand
 
   // reserve coverage requirement
-  min_reserve_coverage_bps: 10_000 // 100.00% coverage
+  min_reserve_coverage_bps: 10_000n // 100.00% coverage
 } as const;
