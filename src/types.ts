@@ -33,4 +33,5 @@ export type LedgerEvent =
   | { type: "MINT"; at: ISODateTime; amount: USDN; memo: string }
   | { type: "BURN"; at: ISODateTime; amount: USDN; memo: string }
   | { type: "RESERVE_SNAPSHOT"; at: ISODateTime; snapshot: ReserveSnapshot }
-  | { type: "POLICY_ACTION"; at: ISODateTime; action: PolicyAction };
+  | { type: "POLICY_ACTION"; at: ISODateTime; action: PolicyAction }
+  | { type: "POLICY_REJECTED"; at: ISODateTime; action: PolicyAction; reason: string };

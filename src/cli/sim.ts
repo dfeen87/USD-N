@@ -30,6 +30,10 @@ export function runSim(steps = 12): void {
         console.log(`${e.at} ${e.type} ${formatUSD(e.amount)} :: ${e.memo}`);
       } else if (e.type === "POLICY_ACTION") {
         console.log(`${e.at} POLICY ${e.action.kind} :: ${e.action.reason}`);
+      } else if (e.type === "POLICY_REJECTED") {
+        console.log(
+          `${e.at} POLICY_REJECTED ${e.action.kind} :: ${e.reason}`
+        );
       }
     }
   }

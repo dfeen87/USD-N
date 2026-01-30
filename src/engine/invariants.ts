@@ -27,3 +27,17 @@ export function assertReserveCoverage(snapshot: ReserveSnapshot, supply: USDN): 
     throw new Error(`INVARIANT_FAIL: reserve coverage too low (${cov} bps)`);
   }
 }
+
+export function assertValidReserveSnapshot(snapshot: ReserveSnapshot): void {
+  assertNonNegative("reserve.total_value_usd", snapshot.total_value_usd);
+  let sum = 0n;
+  for (const [asset, value] of Object.entries(snapshot.by_asset_usd)) {
+    assertNonNegative(`reserve.asset.${asset}`, value);
+    sum += value;
+  }
+  if (sum !== snapshot.total_value_usd) {
+    throw new Error(
+      `INVARIANT_FAIL: reserve total mismatch (sum=${sum}, total=${snapshot.total_value_usd})`
+    );
+  }
+}
