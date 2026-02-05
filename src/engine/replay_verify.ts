@@ -2,8 +2,11 @@
 import type { HashedEvent } from "./hashchain.js";
 import { computeEventHash } from "./hashchain.js";
 import type { ReserveSnapshot } from "../types.js";
-import { assertNonNegative } from "./invariants.js";
-import { assertReserveCoverage } from "./invariants.js";
+import {
+  assertNonNegative,
+  assertReserveCoverage,
+  assertValidReserveSnapshot
+} from "./invariants.js";
 
 export type VerifyResult = {
   ok: boolean;
@@ -40,6 +43,7 @@ export function verifyAndReplay(events: readonly HashedEvent[]): VerifyResult {
     try {
       switch (e.type) {
         case "RESERVE_SNAPSHOT": {
+          assertValidReserveSnapshot(e.snapshot);
           lastReserveSnapshot = e.snapshot;
           break;
         }
