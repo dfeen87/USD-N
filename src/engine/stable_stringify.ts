@@ -10,8 +10,8 @@ function canonicalize(value: unknown): unknown {
 
   if (t === "number" || t === "string" || t === "boolean") return value;
 
-  // NOTE: BigInt cannot be JSON-stringified directly; represent as string.
-  if (t === "bigint") return value.toString();
+  // NOTE: BigInt cannot be JSON-stringified directly; tag to preserve type.
+  if (t === "bigint") return { __type: "bigint", value: value.toString() };
 
   if (Array.isArray(value)) return value.map(canonicalize);
 
@@ -24,5 +24,5 @@ function canonicalize(value: unknown): unknown {
   }
 
   // undefined, function, symbol: not permitted in hashed payloads
-  return null;
+  throw new Error(`UNSUPPORTED_TYPE: ${t}`);
 }

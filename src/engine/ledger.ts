@@ -17,7 +17,7 @@ export class Ledger {
   }
 
   getEvents(): readonly HashedEvent[] {
-    return this.events;
+    return this.events.slice();
   }
 
   private append(event: LedgerEvent): void {
