@@ -16,8 +16,8 @@ export function computeEventHash(
   prev_hash: string
 ): string {
   const payload = stableStringify({
-    prev_hash,
-    event
+    event,
+    prev_hash
   });
 
   return crypto
