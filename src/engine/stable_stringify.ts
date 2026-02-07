@@ -17,12 +17,21 @@ function canonicalize(value: unknown): unknown {
 
   if (t === "object") {
     const obj = value as Record<string, unknown>;
-    const keys = Object.keys(obj).sort();
+    const keys = Object.keys(obj);
+    const sortedKeys =
+      keys.length > 1 && !areKeysSorted(keys) ? [...keys].sort() : keys;
     const out: Record<string, unknown> = {};
-    for (const k of keys) out[k] = canonicalize(obj[k]);
+    for (const k of sortedKeys) out[k] = canonicalize(obj[k]);
     return out;
   }
 
   // undefined, function, symbol: not permitted in hashed payloads
   throw new Error(`UNSUPPORTED_TYPE: ${t}`);
+}
+
+function areKeysSorted(keys: string[]): boolean {
+  for (let i = 1; i < keys.length; i++) {
+    if (keys[i - 1] > keys[i]) return false;
+  }
+  return true;
 }
