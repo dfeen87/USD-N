@@ -8,6 +8,11 @@ import type {
 } from "../types.js";
 import { btcToUsdCents, usdCentsToBtc } from "./invariants.js";
 
+/**
+ * Scope boundary reminder:
+ * USD-N policy logic must remain within the explicit non-goals in NON_GOALS.md.
+ * No custody, no discretionary issuance, no promised convertibility, no enforcement of acceptance.
+ */
 export function fidesPolicyDecision(
   telemetry: MacroTelemetry,
   currentSupply: USDN

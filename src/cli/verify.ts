@@ -8,27 +8,34 @@ type VerifyOptions = {
   file: string;
   quiet: boolean;
   maxErrors: number;
+  strict: boolean;
 };
 
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   const events = await readJsonl(opts.file);
 
-  const res = verifyAndReplay(events);
+  const res = verifyAndReplay(events, { strict: opts.strict });
 
   if (!opts.quiet) {
     console.log(`USD-N VERIFY`);
     console.log(`File: ${opts.file}`);
     console.log(`Events: ${res.events}`);
     console.log(`Final supply: ${formatUSD(res.final_supply_cents)}`);
+    console.log(`Mode: ${opts.strict ? "STRICT" : "STANDARD"}`);
     console.log(`Status: ${res.ok ? "OK" : "FAIL"}`);
   }
 
   if (!res.ok) {
-    const shown = res.errors.slice(0, opts.maxErrors);
+    const [first, ...rest] = res.errors;
+    if (first) {
+      console.error(`FIRST_ERROR: ${first}`);
+    }
+    const remainingSlots = Math.max(0, opts.maxErrors - 1);
+    const shown = rest.slice(0, remainingSlots);
     for (const e of shown) console.error(e);
-    if (res.errors.length > shown.length) {
-      console.error(`...and ${res.errors.length - shown.length} more`);
+    if (rest.length > shown.length) {
+      console.error(`...and ${rest.length - shown.length} more`);
     }
     process.exit(1);
   }
@@ -44,6 +51,7 @@ function parseArgs(args: string[]): VerifyOptions {
   let file = "";
   let quiet = false;
   let maxErrors = 50;
+  let strict = false;
 
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
@@ -52,6 +60,11 @@ function parseArgs(args: string[]): VerifyOptions {
 
     if (a === "--quiet" || a === "-q") {
       quiet = true;
+      continue;
+    }
+
+    if (a === "--strict") {
+      strict = true;
       continue;
     }
 
@@ -70,11 +83,13 @@ function parseArgs(args: string[]): VerifyOptions {
 
   if (!file) usageAndExit();
 
-  return { file, quiet, maxErrors };
+  return { file, quiet, maxErrors, strict };
 }
 
 function usageAndExit(): never {
-  console.error("Usage: usd-n-verify <log.jsonl> [--quiet|-q] [--max-errors N]");
+  console.error(
+    "Usage: usd-n-verify <log.jsonl> [--quiet|-q] [--strict] [--max-errors N]"
+  );
   process.exit(2);
 }
 

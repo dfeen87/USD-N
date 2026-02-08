@@ -1,18 +1,11 @@
 // src/engine/replay_verify.ts
 import type { HashedEvent } from "./hashchain.js";
 import { computeEventHash } from "./hashchain.js";
-import type { BtcOwnershipProof, PolicyAction, ReserveSnapshot, StressSnapshot } from "../types.js";
-import { stressAdjustedIssuanceAmount } from "./policy.js";
+import type { PolicyAction, ReserveSnapshot, StressSnapshot } from "../types.js";
 import {
-  assertBtcReserveCoverage,
-  assertValidBtcOwnershipProof,
-  assertValidBtcPriceSnapshot,
-  assertNonNegative,
-  assertReserveCoverage,
-  assertValidReserveSnapshot,
-  assertValidStressSnapshot,
-  btcToUsdCents
-} from "./invariants.js";
+  isValidTenderState,
+  validateTenderState
+} from "./tender_validity.js";
 
 export type VerifyResult = {
   ok: boolean;
@@ -21,7 +14,14 @@ export type VerifyResult = {
   errors: string[];
 };
 
-export function verifyAndReplay(events: readonly HashedEvent[]): VerifyResult {
+export type VerifyOptions = {
+  strict?: boolean;
+};
+
+export function verifyAndReplay(
+  events: readonly HashedEvent[],
+  options: VerifyOptions = {}
+): VerifyResult {
   const errors: string[] = [];
 
   let supply = 0n;
@@ -29,7 +29,11 @@ export function verifyAndReplay(events: readonly HashedEvent[]): VerifyResult {
   let lastReserveSnapshot: ReserveSnapshot | null = null;
   let lastStressSnapshot: StressSnapshot | null = null;
   let lastPolicyAction: PolicyAction | null = null;
+  let lastPolicyActionIndex: number | null = null;
+  let lastReserveSnapshotIndex: number | null = null;
+  let lastStressSnapshotIndex: number | null = null;
   const usedBtcProofs = new Set<string>();
+  const strict = options.strict ?? false;
 
   for (let i = 0; i < events.length; i++) {
     const e = events[i];
@@ -50,123 +54,65 @@ export function verifyAndReplay(events: readonly HashedEvent[]): VerifyResult {
 
     // 2) state replay + invariants
     try {
+      const tenderState = {
+        event: e,
+        index: i,
+        currentSupply: supply,
+        lastPolicyAction,
+        lastPolicyActionIndex,
+        lastReserveSnapshot,
+        lastReserveSnapshotIndex,
+        lastStressSnapshot,
+        lastStressSnapshotIndex,
+        usedBtcProofs,
+        strict
+      };
+      if (!isValidTenderState(tenderState)) {
+        const tenderErrors = validateTenderState(tenderState);
+        for (const err of tenderErrors) {
+          errors.push(`${err} at index ${i}`);
+        }
+      }
+
       switch (e.type) {
         case "RESERVE_SNAPSHOT": {
-          assertValidReserveSnapshot(e.snapshot);
           lastReserveSnapshot = e.snapshot;
+          lastReserveSnapshotIndex = i;
           break;
         }
 
         case "STRESS_SNAPSHOT": {
-          assertValidStressSnapshot(e.snapshot, e.at);
           lastStressSnapshot = e.snapshot;
+          lastStressSnapshotIndex = i;
           break;
         }
 
         case "MINT": {
-          assertNonNegative("mint.amount", e.amount);
-          if (!lastStressSnapshot) {
-            errors.push(`INVARIANT_FAIL mint missing stress snapshot at index ${i}`);
-            break;
-          }
-          if (!lastPolicyAction || lastPolicyAction.kind !== "ISSUE") {
-            errors.push(`INVARIANT_FAIL mint missing policy action at index ${i}`);
-            break;
-          }
-          const expected = stressAdjustedIssuanceAmount(
-            lastPolicyAction.amount,
-            lastStressSnapshot
-          );
-          if (expected !== e.amount) {
-            errors.push(
-              `INVARIANT_FAIL mint exceeds stress bounds at index ${i}: expected=${expected} actual=${e.amount}`
-            );
-          }
-
-          // Reserve coverage is a precondition to issuance, if we have a snapshot.
-          // If no snapshot exists yet, we don't invent one; we only enforce what is known.
-          const newSupply = supply + e.amount;
-          if (lastReserveSnapshot) {
-            assertBtcReserveCoverage(lastReserveSnapshot, newSupply);
-            assertReserveCoverage(lastReserveSnapshot, newSupply);
-          }
-
-          supply = newSupply;
+          supply = supply + e.amount;
           break;
         }
 
         case "BURN": {
-          assertNonNegative("burn.amount", e.amount);
           if (e.amount > supply) {
-            errors.push(
-              `INVARIANT_FAIL burn>suppy at index ${i}: burn=${e.amount} supply=${supply}`
-            );
             // still apply a safe behavior: do not underflow state
-          } else {
-            supply = supply - e.amount;
+            break;
           }
+          supply = supply - e.amount;
           break;
         }
 
         case "BTC_BACKED_ISSUE": {
-          assertNonNegative("btc_issue.amount", e.amount);
-          assertValidBtcPriceSnapshot(e.price_snapshot, e.at);
-          assertValidBtcOwnershipProof(e.proof);
-
           const key = proofKey(e.proof);
-          if (usedBtcProofs.has(key)) {
-            errors.push(`INVARIANT_FAIL btc proof reused at index ${i}`);
-            break;
-          }
           usedBtcProofs.add(key);
-
-          const expected = btcToUsdCents(
-            e.btc_amount,
-            e.price_snapshot.price_usd
-          );
-          if (expected !== e.amount) {
-            errors.push(
-              `INVARIANT_FAIL btc issue amount mismatch at index ${i}: expected=${expected} actual=${e.amount}`
-            );
-          }
-
-          const newSupply = supply + e.amount;
-          if (lastReserveSnapshot) {
-            assertBtcReserveCoverage(lastReserveSnapshot, newSupply);
-          } else {
-            errors.push(`INVARIANT_FAIL btc issue missing reserve snapshot at index ${i}`);
-          }
-
-          supply = newSupply;
+          supply = supply + e.amount;
           break;
         }
 
         case "BTC_BACKED_BURN": {
-          assertNonNegative("btc_burn.amount", e.amount);
-          assertValidBtcPriceSnapshot(e.price_snapshot, e.at);
-          const expected = btcToUsdCents(
-            e.btc_amount,
-            e.price_snapshot.price_usd
-          );
-          if (expected !== e.amount) {
-            errors.push(
-              `INVARIANT_FAIL btc burn amount mismatch at index ${i}: expected=${expected} actual=${e.amount}`
-            );
-          }
-          if (!lastReserveSnapshot?.btc) {
-            errors.push(`INVARIANT_FAIL btc burn missing reserve snapshot at index ${i}`);
-          } else if (lastReserveSnapshot.btc.amount_btc < e.btc_amount) {
-            errors.push(
-              `INVARIANT_FAIL btc burn exceeds reserves at index ${i}: burn=${e.btc_amount} reserve=${lastReserveSnapshot.btc.amount_btc}`
-            );
-          }
           if (e.amount > supply) {
-            errors.push(
-              `INVARIANT_FAIL btc burn>suppy at index ${i}: burn=${e.amount} supply=${supply}`
-            );
-          } else {
-            supply = supply - e.amount;
+            break;
           }
+          supply = supply - e.amount;
           break;
         }
 
@@ -174,6 +120,7 @@ export function verifyAndReplay(events: readonly HashedEvent[]): VerifyResult {
           // Policy events are informational from the verifier’s perspective.
           // They can be cross-checked later, but they do not change supply.
           lastPolicyAction = e.action;
+          lastPolicyActionIndex = i;
           break;
         }
 
@@ -188,7 +135,9 @@ export function verifyAndReplay(events: readonly HashedEvent[]): VerifyResult {
         }
       }
 
-      assertNonNegative("supply", supply);
+      if (supply < 0n) {
+        errors.push(`INVARIANT_FAIL: supply < 0 at index ${i}`);
+      }
     } catch (err) {
       errors.push(
         `EXCEPTION at index ${i} type=${e.type}: ${
@@ -214,6 +163,6 @@ function stripHashFields(e: HashedEvent) {
   return event;
 }
 
-function proofKey(proof: BtcOwnershipProof): string {
+function proofKey(proof: { btc_address: string; message: string; signature: string }): string {
   return `${proof.btc_address}|${proof.message}|${proof.signature}`;
 }
