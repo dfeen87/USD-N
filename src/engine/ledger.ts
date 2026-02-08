@@ -1,10 +1,11 @@
-import type { LedgerEvent, USDN } from "../types.js";
+import type { BtcOwnershipProof, BtcPriceSnapshot, LedgerEvent, USDN } from "../types.js";
 import { assertNonNegative } from "./invariants.js";
 import { hashEvent, HashedEvent } from "./hashchain.js";
 
 export class Ledger {
   private events: HashedEvent[] = [];
   private supply: USDN = 0n;
+  private usedBtcProofs = new Set<string>();
 
   private lastHash(): string {
     return this.events.length === 0
@@ -40,7 +41,59 @@ export class Ledger {
     this.append({ type: "BURN", at, amount, memo });
   }
 
+  issueBtcBacked(
+    at: string,
+    amount: USDN,
+    btc_amount: number,
+    price_snapshot: BtcPriceSnapshot,
+    proof: BtcOwnershipProof,
+    memo: string
+  ): void {
+    assertNonNegative("btc_issue.amount", amount);
+    const key = proofKey(proof);
+    if (this.usedBtcProofs.has(key)) {
+      throw new Error("INVARIANT_FAIL: btc proof reused");
+    }
+    this.usedBtcProofs.add(key);
+    this.supply += amount;
+    this.append({
+      type: "BTC_BACKED_ISSUE",
+      at,
+      amount,
+      btc_amount,
+      price_snapshot,
+      proof,
+      memo
+    });
+  }
+
+  burnBtcBacked(
+    at: string,
+    amount: USDN,
+    btc_amount: number,
+    price_snapshot: BtcPriceSnapshot,
+    memo: string
+  ): void {
+    assertNonNegative("btc_burn.amount", amount);
+    if (amount > this.supply) {
+      throw new Error("INVARIANT_FAIL: btc burn exceeds supply");
+    }
+    this.supply -= amount;
+    this.append({
+      type: "BTC_BACKED_BURN",
+      at,
+      amount,
+      btc_amount,
+      price_snapshot,
+      memo
+    });
+  }
+
   record(event: LedgerEvent): void {
     this.append(event);
   }
+}
+
+function proofKey(proof: BtcOwnershipProof): string {
+  return `${proof.btc_address}|${proof.message}|${proof.signature}`;
 }

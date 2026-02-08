@@ -1,9 +1,19 @@
-import type { LedgerEvent, MacroTelemetry, ReserveSnapshot } from "../types.js";
+import type {
+  BtcOwnershipProof,
+  BtcPriceSnapshot,
+  LedgerEvent,
+  MacroTelemetry,
+  ReserveSnapshot,
+  USDN
+} from "../types.js";
 import { Ledger } from "./ledger.js";
-import { fidesPolicyDecision } from "./policy.js";
+import { btcBackedBurnAmount, btcBackedMintAmount, fidesPolicyDecision } from "./policy.js";
 import {
+  assertBtcReserveCoverage,
   assertReserveCoverage,
   assertStepLimit,
+  assertValidBtcOwnershipProof,
+  assertValidBtcPriceSnapshot,
   assertValidReserveSnapshot
 } from "./invariants.js";
 
@@ -29,6 +39,7 @@ export class FIDES {
         assertStepLimit("ISSUE", action.amount);
         // enforce reserve coverage AFTER issue (conservative check)
         const newSupply = this.ledger.getSupply() + action.amount;
+        assertBtcReserveCoverage(reserves, newSupply);
         assertReserveCoverage(reserves, newSupply);
 
         this.ledger.mint(at, action.amount, action.reason);
@@ -48,6 +59,126 @@ export class FIDES {
         this.ledger.record({ type: "POLICY_REJECTED", at, action, reason });
         produced.push({ type: "POLICY_REJECTED", at, action, reason });
       }
+    }
+
+    return produced;
+  }
+
+  issueBtcBacked(
+    at: string,
+    reserves: ReserveSnapshot,
+    btc_amount: number,
+    price_snapshot: BtcPriceSnapshot,
+    proof: BtcOwnershipProof,
+    memo = "BTC-backed issue"
+  ): LedgerEvent[] {
+    const produced: LedgerEvent[] = [];
+    const actionAmount = btcBackedMintAmount(btc_amount, price_snapshot);
+    const action = {
+      kind: "BTC_BACKED_ISSUE",
+      amount: actionAmount,
+      btc_amount,
+      price_snapshot,
+      proof,
+      reason: memo
+    } satisfies {
+      kind: "BTC_BACKED_ISSUE";
+      amount: USDN;
+      btc_amount: number;
+      price_snapshot: BtcPriceSnapshot;
+      proof: BtcOwnershipProof;
+      reason: string;
+    };
+
+    try {
+      assertValidReserveSnapshot(reserves);
+      assertValidBtcPriceSnapshot(price_snapshot, at);
+      assertValidBtcOwnershipProof(proof);
+
+      const newSupply = this.ledger.getSupply() + actionAmount;
+      assertBtcReserveCoverage(reserves, newSupply);
+
+      this.ledger.issueBtcBacked(
+        at,
+        actionAmount,
+        btc_amount,
+        price_snapshot,
+        proof,
+        memo
+      );
+      produced.push({
+        type: "BTC_BACKED_ISSUE",
+        at,
+        amount: actionAmount,
+        btc_amount,
+        price_snapshot,
+        proof,
+        memo
+      });
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      this.ledger.record({ type: "POLICY_REJECTED", at, action, reason });
+      produced.push({ type: "POLICY_REJECTED", at, action, reason });
+    }
+
+    return produced;
+  }
+
+  burnBtcBacked(
+    at: string,
+    reserves: ReserveSnapshot,
+    amount: USDN,
+    price_snapshot: BtcPriceSnapshot,
+    memo = "BTC-backed burn"
+  ): LedgerEvent[] {
+    const produced: LedgerEvent[] = [];
+    const btc_amount = btcBackedBurnAmount(amount, price_snapshot);
+    const action = {
+      kind: "BTC_BACKED_BURN",
+      amount,
+      btc_amount,
+      price_snapshot,
+      reason: memo
+    } satisfies {
+      kind: "BTC_BACKED_BURN";
+      amount: USDN;
+      btc_amount: number;
+      price_snapshot: BtcPriceSnapshot;
+      reason: string;
+    };
+
+    try {
+      assertValidReserveSnapshot(reserves);
+      assertValidBtcPriceSnapshot(price_snapshot, at);
+
+      if (!reserves.btc) {
+        throw new Error("INVARIANT_FAIL: btc reserve missing for burn");
+      }
+      if (reserves.btc.amount_btc < btc_amount) {
+        throw new Error(
+          `INVARIANT_FAIL: btc reserve insufficient (need=${btc_amount}, have=${reserves.btc.amount_btc})`
+        );
+      }
+
+      this.ledger.burnBtcBacked(
+        at,
+        amount,
+        btc_amount,
+        price_snapshot,
+        memo
+      );
+      produced.push({
+        type: "BTC_BACKED_BURN",
+        at,
+        amount,
+        btc_amount,
+        price_snapshot,
+        memo
+      });
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      this.ledger.record({ type: "POLICY_REJECTED", at, action, reason });
+      produced.push({ type: "POLICY_REJECTED", at, action, reason });
     }
 
     return produced;
