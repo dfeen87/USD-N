@@ -13,7 +13,8 @@ export async function resolveReserves(
       UST: attestation.total_value_usd_cents,
       GOLD: 0n,
       ENERGY: 0n,
-      COMMODITY: 0n
+      COMMODITY: 0n,
+      BTC: 0n
     },
     attestation_id: attestation.signature
   };
