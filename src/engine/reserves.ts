@@ -3,16 +3,24 @@ import type { ReserveSnapshot, ReserveAsset, USD } from "../types.js";
 const ASSETS: ReserveAsset[] = ["UST", "GOLD", "ENERGY", "COMMODITY"];
 const NON_BTC_ASSET_COUNT = ASSETS.length;
 
-export function makeReserveSnapshot(at: string, total_value_usd: USD): ReserveSnapshot {
+export function makeReserveSnapshot(
+  at: string,
+  total_value_usd: USD,
+  btc_value_usd: USD = 0n
+): ReserveSnapshot {
   // simple split for now; later tie to weights + pricing feeds
-  const each = total_value_usd / BigInt(NON_BTC_ASSET_COUNT);
+  if (btc_value_usd > total_value_usd) {
+    throw new Error("INVARIANT_FAIL: BTC reserve exceeds total reserves");
+  }
+  const nonBtcTotal = total_value_usd - btc_value_usd;
+  const each = nonBtcTotal / BigInt(NON_BTC_ASSET_COUNT);
   const by_asset_usd = {
     UST: each,
     GOLD: each,
     ENERGY: each,
     COMMODITY:
-      total_value_usd - each * BigInt(NON_BTC_ASSET_COUNT - 1), // keep sum exact
-    BTC: 0n
+      nonBtcTotal - each * BigInt(NON_BTC_ASSET_COUNT - 1), // keep sum exact
+    BTC: btc_value_usd
   } satisfies Record<ReserveAsset, USD>;
 
   return {
