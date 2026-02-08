@@ -53,6 +53,16 @@ export type StressSnapshot = {
   timestamp: number;
 };
 
+export type AlignmentReport = {
+  at: ISODateTime;
+  supply_usd_cents: USDN;
+  reserve_total_usd_cents: USD;
+  reserve_coverage_bps: bigint;
+  btc_reserve_usd_cents: USD;
+  btc_reserve_share_bps: bigint;
+  stress_multiplier_bps: number;
+};
+
 export type PolicyAction =
   | { kind: "ISSUE"; amount: USDN; reason: string }
   | { kind: "BURN"; amount: USDN; reason: string }

@@ -1,6 +1,7 @@
 import { Ledger } from "../engine/ledger.js";
 import { FIDES } from "../engine/fides.js";
 import { makeReserveSnapshot } from "../engine/reserves.js";
+import { buildAlignmentReport } from "../engine/alignment.js";
 import type { MacroTelemetry, StressSnapshot } from "../types.js";
 
 function isoNowPlusMinutes(m: number): string {
@@ -22,7 +23,7 @@ export function runSim(steps = 12): void {
     };
 
     // reserves always cover supply in this toy sim; start with $1,000,000
-    const reserves = makeReserveSnapshot(at, 1_000_000_00n);
+    const reserves = makeReserveSnapshot(at, 1_000_000_00n, 300_000_00n);
 
     const stress: StressSnapshot = {
       btc_drawdown_pct: i < 4 ? 35 : i < 8 ? 12 : 4,
@@ -42,6 +43,17 @@ export function runSim(steps = 12): void {
         );
       }
     }
+
+    const report = buildAlignmentReport(
+      ledger.getSupply(),
+      reserves,
+      stress
+    );
+    console.log(
+      `${report.at} ALIGNMENT coverage=${formatBps(report.reserve_coverage_bps)}` +
+        ` btc_share=${formatBps(report.btc_reserve_share_bps)}` +
+        ` stress_mult=${formatBps(BigInt(report.stress_multiplier_bps))}`
+    );
   }
 
   console.log(`\nFinal supply: ${formatUSD(ledger.getSupply())}`);
@@ -53,6 +65,14 @@ function formatUSD(cents: bigint): string {
   const dollars = v / 100n;
   const rem = v % 100n;
   return `${sign}$${dollars}.${rem.toString().padStart(2, "0")}`;
+}
+
+function formatBps(bps: bigint): string {
+  const sign = bps < 0n ? "-" : "";
+  const value = bps < 0n ? -bps : bps;
+  const whole = value / 100n;
+  const rem = value % 100n;
+  return `${sign}${whole}.${rem.toString().padStart(2, "0")}%`;
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
