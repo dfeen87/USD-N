@@ -7,7 +7,8 @@ export type ReserveAsset =
   | "UST"        // U.S. Treasury instruments (proxy)
   | "GOLD"       // certified physical gold (proxy)
   | "ENERGY"     // clean energy credits (proxy)
-  | "COMMODITY"; // industrial commodities (proxy)
+  | "COMMODITY"  // industrial commodities (proxy)
+  | "BTC";       // Bitcoin reserves
 
 export type ReserveSnapshot = {
   at: ISODateTime;
@@ -15,6 +16,26 @@ export type ReserveSnapshot = {
   total_value_usd: USD;
   by_asset_usd: Record<ReserveAsset, USD>;
   attestation_id: string; // placeholder for audit/proof-of-reserve reference
+  btc?: BtcReserve;
+};
+
+export type BtcPriceSnapshot = {
+  price_usd: number;
+  timestamp: number;
+  source: string;
+};
+
+export type BtcOwnershipProof = {
+  btc_address: string;
+  message: string;
+  signature: string;
+};
+
+export type BtcReserve = {
+  asset: "BTC";
+  amount_btc: number;
+  value_usd: USD;
+  price_snapshot: BtcPriceSnapshot;
 };
 
 export type MacroTelemetry = {
@@ -27,11 +48,43 @@ export type MacroTelemetry = {
 export type PolicyAction =
   | { kind: "ISSUE"; amount: USDN; reason: string }
   | { kind: "BURN"; amount: USDN; reason: string }
-  | { kind: "NOOP"; reason: string };
+  | { kind: "NOOP"; reason: string }
+  | {
+      kind: "BTC_BACKED_ISSUE";
+      amount: USDN;
+      btc_amount: number;
+      price_snapshot: BtcPriceSnapshot;
+      proof: BtcOwnershipProof;
+      reason: string;
+    }
+  | {
+      kind: "BTC_BACKED_BURN";
+      amount: USDN;
+      btc_amount: number;
+      price_snapshot: BtcPriceSnapshot;
+      reason: string;
+    };
 
 export type LedgerEvent =
   | { type: "MINT"; at: ISODateTime; amount: USDN; memo: string }
   | { type: "BURN"; at: ISODateTime; amount: USDN; memo: string }
   | { type: "RESERVE_SNAPSHOT"; at: ISODateTime; snapshot: ReserveSnapshot }
   | { type: "POLICY_ACTION"; at: ISODateTime; action: PolicyAction }
-  | { type: "POLICY_REJECTED"; at: ISODateTime; action: PolicyAction; reason: string };
+  | { type: "POLICY_REJECTED"; at: ISODateTime; action: PolicyAction; reason: string }
+  | {
+      type: "BTC_BACKED_ISSUE";
+      at: ISODateTime;
+      amount: USDN;
+      btc_amount: number;
+      price_snapshot: BtcPriceSnapshot;
+      proof: BtcOwnershipProof;
+      memo: string;
+    }
+  | {
+      type: "BTC_BACKED_BURN";
+      at: ISODateTime;
+      amount: USDN;
+      btc_amount: number;
+      price_snapshot: BtcPriceSnapshot;
+      memo: string;
+    };

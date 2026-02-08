@@ -1,5 +1,6 @@
 import { CONFIG } from "../config.js";
-import type { MacroTelemetry, PolicyAction, USDN } from "../types.js";
+import type { BtcPriceSnapshot, MacroTelemetry, PolicyAction, USDN } from "../types.js";
+import { btcToUsdCents, usdCentsToBtc } from "./invariants.js";
 
 export function fidesPolicyDecision(
   telemetry: MacroTelemetry,
@@ -26,6 +27,20 @@ export function fidesPolicyDecision(
   }
 
   return { kind: "NOOP", reason: `CPI within band (${cpi} bps) -> hold` };
+}
+
+export function btcBackedMintAmount(
+  btc_amount: number,
+  price_snapshot: BtcPriceSnapshot
+): USDN {
+  return btcToUsdCents(btc_amount, price_snapshot.price_usd);
+}
+
+export function btcBackedBurnAmount(
+  amount: USDN,
+  price_snapshot: BtcPriceSnapshot
+): number {
+  return usdCentsToBtc(amount, price_snapshot.price_usd);
 }
 
 function policyAmount(currentSupply: USDN): USDN {

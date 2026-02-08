@@ -117,8 +117,14 @@ async function readJsonl(path: string): Promise<HashedEvent[]> {
  * - any field ending with "_cents" or named "amount" or "total_value_usd" is revived if it is a string
  */
 function reviveBigints(e: any): HashedEvent {
-  // amount on MINT/BURN
-  if ((e?.type === "MINT" || e?.type === "BURN") && typeof e.amount === "string") {
+  // amount on MINT/BURN/BTC-backed
+  if (
+    (e?.type === "MINT" ||
+      e?.type === "BURN" ||
+      e?.type === "BTC_BACKED_ISSUE" ||
+      e?.type === "BTC_BACKED_BURN") &&
+    typeof e.amount === "string"
+  ) {
     e.amount = BigInt(e.amount);
   }
 
@@ -133,6 +139,16 @@ function reviveBigints(e: any): HashedEvent {
         if (typeof v === "string") e.snapshot.by_asset_usd[k] = BigInt(v);
       }
     }
+    if (typeof e.snapshot?.btc?.value_usd === "string") {
+      e.snapshot.btc.value_usd = BigInt(e.snapshot.btc.value_usd);
+    }
+  }
+
+  if (
+    (e?.type === "POLICY_ACTION" || e?.type === "POLICY_REJECTED") &&
+    typeof e.action?.amount === "string"
+  ) {
+    e.action.amount = BigInt(e.action.amount);
   }
 
   return e as HashedEvent;
