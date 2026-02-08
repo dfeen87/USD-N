@@ -1,25 +1,23 @@
 # USD-N
 
-**The New U.S. Dollar**  
-*A sovereign, programmable monetary system governed by the FIDES Protocol.*
+**A Deterministic, Reserve-Constrained Dollar Reference System**
+*Governed by the FIDES Protocol*
 
 ---
 
 ## Overview
 
-**USD-N** is a digitally native evolution of the United States Dollar designed to operate
-alongside the legacy USD at full **1:1 parity**.
+**USD-N** is a **digitally native monetary reference system** designed to model, enforce, and audit
+U.S. dollar–denominated supply under explicit, rule-based constraints.
 
-It is **not a replacement currency**, not a speculative asset, and not a conventional
-central bank digital currency (CBDC).  
-USD-N is an **asset-backed, transparently auditable, programmable dollar rail** built to
-modernize monetary infrastructure while preserving U.S. monetary sovereignty.
+It is **not legal tender**, not a retail currency, and not a discretionary monetary authority.
+USD-N defines a **programmable dollar rail** whose issuance, redemption, and contraction are
+**derivable from verifiable reserves and deterministic policy rules**, rather than human judgment.
 
-USD-N is governed by the **FIDES Protocol** — a rule-based fiscal system that enforces
-inflation control, debt discipline, and transparency through immutable code rather than
-discretionary policy.
+USD-N is governed by the **FIDES Protocol**, an invariant-driven fiscal engine that enforces
+monetary discipline, replayable auditability, and counter-cyclical behavior through code.
 
-Non-legal-tender. Protocol definition only. Custody and deployment are out of scope.
+Protocol definition only. Custody, deployment, and user interfaces are explicitly out of scope.
 
 ---
 
@@ -27,89 +25,113 @@ Non-legal-tender. Protocol definition only. Custody and deployment are out of sc
 
 USD-N is built on a small set of non-negotiable principles:
 
-- **Parity First**  
-  Permanent 1:1 parity with the U.S. Dollar.
+* **Determinism First**
+  Monetary outcomes are derived from explicit inputs and replay identically across time.
 
-- **Sovereign Neutrality**  
-  No ad-hoc monetary actions. Rules are explicit, auditable, and enforced automatically.
+* **Constraint Over Discretion**
+  Supply is limited by reserves and policy invariants, not committees or ad-hoc decisions.
 
-- **Transparency by Design**  
-  Supply changes, reserve backing, and fiscal operations are publicly verifiable.
+* **Auditability by Construction**
+  Every state transition is ledgered, hash-stable, and independently replayable.
 
-- **Programmable, Not Arbitrary**  
-  Monetary logic is deterministic, constrained, and rule-based.
+* **Counter-Cyclical Discipline**
+  Issuance tightens automatically during stress and relaxes only under defined conditions.
 
-- **Interoperable**  
-  Designed to integrate with existing financial infrastructure and public blockchain
-  systems without fragmentation.
+* **Interoperability Without Custody**
+  External assets and signals may constrain supply without introducing trusted intermediaries.
 
 ---
 
 ## What USD-N Is
 
-- A **digitally native dollar rail**
-- **Fully collateralized** by verifiable real-world assets
-- **Programmable** for precision fiscal operations
-- **Auditable** in real time
-- **Interoperable** with public blockchain ecosystems
-- **Governed by code**, not committees
+* A **deterministic dollar reference system**
+* **Reserve-constrained** rather than trust-based
+* **Replay-verifiable** down to individual issuance decisions
+* **Counter-cyclical by design**
+* **Ledger-driven**, not account-driven
+* **Governed by code**, not discretion
 
 ---
 
 ## What USD-N Is Not
 
-- ❌ Not a speculative cryptocurrency  
-- ❌ Not a privately issued stablecoin  
-- ❌ Not a surveillance CBDC  
-- ❌ Not a replacement for Bitcoin or Ethereum  
-- ❌ Not a political instrument  
+* ❌ Not a speculative cryptocurrency
+* ❌ Not a privately issued stablecoin
+* ❌ Not a CBDC or surveillance system
+* ❌ Not a bank, issuer, or custodian
+* ❌ Not a promise of convertibility
 
-USD-N is designed to **complement decentralized systems**, not compete with them.
+USD-N defines **rules and invariants**, not financial products.
 
 ---
 
-## Asset Backing
+## Reserve & Issuance Model
 
-Each USD-N unit is backed by a diversified, verifiable reserve basket, including:
+USD-N supply is constrained by **explicit reserve snapshots** and **policy invariants**.
 
-- U.S. Treasury instruments  
-- Certified physical gold  
-- Tokenized clean energy credits  
-- Mission-critical industrial commodities  
+As of v2.0.0, the reference implementation supports:
 
-Reserves are governed by **on-chain proof-of-reserve contracts** and independent audits.
+* **BTC-denominated reserve accounting**
+* **BTC/USD price snapshots** for deterministic valuation
+* **Minimal, non-custodial BTC ownership proofs**
+* **Explicit BTC-backed issuance and burn events**
+* **Hard rejection of issuance when reserve coverage fails**
+
+No issuance occurs without:
+
+1. A validated reserve snapshot
+2. A validated price snapshot
+3. Invariant enforcement
+4. A ledgered policy action
+
+All failures emit explicit `POLICY_REJECTED` events.
+
+---
+
+## Counter-Cyclical Supply Control
+
+USD-N incorporates **deterministic stress telemetry** to model real-world monetary tightening.
+
+The protocol supports:
+
+* Explicit **stress snapshots** (e.g. drawdown, volatility inputs)
+* A **monotonic issuance multiplier** bounded in `(0, 1]`
+* Automatic **issuance tightening under stress**
+* Unrestricted burns and redemptions
+
+This ensures USD-N becomes **scarcer during market stress**, mirroring strong-dollar behavior
+without discretionary intervention.
 
 ---
 
 ## The FIDES Protocol
 
-**FIDES**  
-(*Fiscal Integrity via Digital Economic Sovereignty*)
+**FIDES**
+(*Fiscal Integrity via Deterministic Economic Systems*)
 
-FIDES is the autonomous fiscal engine that governs USD-N.
+FIDES is the policy engine that governs USD-N.
 
 It enforces:
 
-- Algorithmic inflation targeting  
-- Programmable debt amortization  
-- Supply modulation tied to real economic signals  
-- Immutable fiscal auditability  
+* Reserve-constrained issuance
+* Deterministic mint and burn semantics
+* Counter-cyclical supply modulation
+* Explicit rejection on invariant violation
+* Full replay and audit of economic validity
 
-FIDES replaces discretionary monetary intervention with **rule-based execution**.
+FIDES does not “decide” outcomes — it **derives** them.
 
 ---
 
-## Relationship to Bitcoin & Ethereum
+## Relationship to External Systems
 
-USD-N does not displace existing decentralized systems.
+USD-N is designed to **interoperate without dependence**.
 
-- **Bitcoin** remains digital scarcity and a store of value.  
-- **Ethereum** remains the global programmable execution layer.  
+* External assets may **constrain** issuance
+* External signals may **inform** policy inputs
+* No external system is trusted for correctness
 
-USD-N provides a **sovereign-grade, stable, auditable unit of account** that interoperates
-with both.
-
-This is **harmonization**, not competition.
+USD-N remains internally consistent even if all external inputs are removed.
 
 ---
 
@@ -117,27 +139,29 @@ This is **harmonization**, not competition.
 
 This repository defines the **core specification and reference implementation** for USD-N.
 
-- Experimental  
-- Non-legal-tender  
-- Open specification  
-- Designed for audit, simulation, and eventual institutional adoption  
+* Experimental
+* Non-legal-tender
+* Open specification
+* Designed for audit, simulation, and research
+* Intended for institutional-grade review
 
 ---
 
 ## Philosophy
 
-> Trust should not be assumed.  
-> It should be enforced by design.
+> Monetary trust should not be requested.
+> It should be provable.
 
 USD-N exists to demonstrate that monetary systems can be:
 
-- Transparent without surveillance  
-- Disciplined without austerity  
-- Programmable without political discretion  
+* Auditable without surveillance
+* Disciplined without discretion
+* Programmable without opacity
+* Strong without coercion
 
 ---
 
 ## License
 
-**MIT License**  
+**MIT License**
 Open by default. Forkable by design.
