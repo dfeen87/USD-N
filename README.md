@@ -90,6 +90,72 @@ All failures emit explicit `POLICY_REJECTED` events.
 
 ---
 
+## The Constraint Triangle
+
+USD-N is not a competing currency.
+It is a **validity layer** that sits between sovereign money and non-sovereign reality.
+
+The system forms a **constraint triangle**:
+
+```
+                ┌──────────────┐
+                │   Bitcoin    │
+                │   (BTC)      │
+                │              │
+                │  External,   │
+                │  Non-Sovereign
+                │  Constraint  │
+                └──────▲───────┘
+                       │
+        Price, Stress, │  Observable Reality
+        Scarcity       │
+                       │
+┌──────────────┐       │       ┌──────────────┐
+│              │───────┼──────▶│              │
+│     USD      │       │       │    USD-N     │
+│              │◀──────┼───────│              │
+│  Unit of     │  Validity &   │  Deterministic
+│  Account     │  Discipline   │  Validity Layer
+│              │               │              │
+└──────────────┘               └──────────────┘
+```
+
+### Roles in the Triangle
+
+* **USD (U.S. Dollar)**
+  The unit of account and settlement medium used by the real economy.
+
+* **Bitcoin (BTC)**
+  An external, non-sovereign reference that provides observable scarcity, price signals,
+  and stress indicators that cannot be manipulated by USD-N or USD issuance logic.
+
+* **USD-N**
+  A deterministic validity layer that:
+
+  * derives issuance constraints from BTC-denominated reserves and stress telemetry
+  * enforces invariant-based discipline on USD-denominated supply
+  * records a fully replayable, hash-chained monetary history
+
+### What This Is *Not*
+
+* This is **not** a peg.
+* This is **not** convertibility.
+* This is **not** competition between USD and BTC.
+
+USD-N does not force either side to change behavior.
+It simply makes **invalid issuance observable and rejectable**.
+
+### Why the Triangle Is Stable
+
+* USD retains its role as the unit of account.
+* Bitcoin remains independent and non-sovereign.
+* USD-N enforces discipline without discretion or custody.
+
+When issuance is disciplined, USD-N is quiet.
+When it is not, USD-N shows **exactly why**.
+
+---
+
 ## Counter-Cyclical Supply Control
 
 USD-N incorporates **deterministic stress telemetry** to encode real-world monetary tightening.
