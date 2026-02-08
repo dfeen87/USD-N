@@ -11,7 +11,9 @@ function canonicalize(value: unknown): unknown {
   if (t === "number" || t === "string" || t === "boolean") return value;
 
   // NOTE: BigInt cannot be JSON-stringified directly; tag to preserve type.
-  if (t === "bigint") return { __type: "bigint", value: value.toString() };
+  if (typeof value === "bigint") {
+    return { __type: "bigint", value: value.toString() };
+  }
 
   if (Array.isArray(value)) return value.map(canonicalize);
 
