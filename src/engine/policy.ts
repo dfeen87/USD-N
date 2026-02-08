@@ -1,5 +1,11 @@
 import { CONFIG } from "../config.js";
-import type { BtcPriceSnapshot, MacroTelemetry, PolicyAction, USDN } from "../types.js";
+import type {
+  BtcPriceSnapshot,
+  MacroTelemetry,
+  PolicyAction,
+  StressSnapshot,
+  USDN
+} from "../types.js";
 import { btcToUsdCents, usdCentsToBtc } from "./invariants.js";
 
 export function fidesPolicyDecision(
@@ -41,6 +47,32 @@ export function btcBackedBurnAmount(
   price_snapshot: BtcPriceSnapshot
 ): number {
   return usdCentsToBtc(amount, price_snapshot.price_usd);
+}
+
+export function issuanceMultiplier(stress: StressSnapshot): number {
+  // Economic intent: tighten issuance when BTC stress is elevated, loosen in calm.
+  // Deterministic, monotonic, and bounded in (0, 1].
+  const stressScore = Math.max(
+    0,
+    stress.btc_drawdown_pct + stress.btc_volatility_pct
+  );
+  const multiplier = 1 / (1 + stressScore / 50);
+  return Math.min(1, Math.max(0, multiplier));
+}
+
+export function stressAdjustedIssuanceAmount(
+  proposed: USDN,
+  stress: StressSnapshot
+): USDN {
+  const stressScore = Math.max(
+    0,
+    stress.btc_drawdown_pct + stress.btc_volatility_pct
+  );
+  const multiplierBps = Math.min(
+    10_000,
+    Math.max(0, Math.floor(50_000 / (50 + stressScore)))
+  );
+  return (proposed * BigInt(multiplierBps)) / 10_000n;
 }
 
 function policyAmount(currentSupply: USDN): USDN {
