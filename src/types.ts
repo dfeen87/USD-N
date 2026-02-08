@@ -45,6 +45,14 @@ export type MacroTelemetry = {
   unemployment_bps: number;
 };
 
+export type StressSnapshot = {
+  // % drawdown from recent BTC peak (0 = no drawdown)
+  btc_drawdown_pct: number;
+  // rolling BTC volatility estimate (%)
+  btc_volatility_pct: number;
+  timestamp: number;
+};
+
 export type PolicyAction =
   | { kind: "ISSUE"; amount: USDN; reason: string }
   | { kind: "BURN"; amount: USDN; reason: string }
@@ -69,6 +77,7 @@ export type LedgerEvent =
   | { type: "MINT"; at: ISODateTime; amount: USDN; memo: string }
   | { type: "BURN"; at: ISODateTime; amount: USDN; memo: string }
   | { type: "RESERVE_SNAPSHOT"; at: ISODateTime; snapshot: ReserveSnapshot }
+  | { type: "STRESS_SNAPSHOT"; at: ISODateTime; snapshot: StressSnapshot }
   | { type: "POLICY_ACTION"; at: ISODateTime; action: PolicyAction }
   | { type: "POLICY_REJECTED"; at: ISODateTime; action: PolicyAction; reason: string }
   | {

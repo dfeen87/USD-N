@@ -1,7 +1,8 @@
 // src/engine/replay_verify.ts
 import type { HashedEvent } from "./hashchain.js";
 import { computeEventHash } from "./hashchain.js";
-import type { BtcOwnershipProof, ReserveSnapshot } from "../types.js";
+import type { BtcOwnershipProof, PolicyAction, ReserveSnapshot, StressSnapshot } from "../types.js";
+import { stressAdjustedIssuanceAmount } from "./policy.js";
 import {
   assertBtcReserveCoverage,
   assertValidBtcOwnershipProof,
@@ -9,6 +10,7 @@ import {
   assertNonNegative,
   assertReserveCoverage,
   assertValidReserveSnapshot,
+  assertValidStressSnapshot,
   btcToUsdCents
 } from "./invariants.js";
 
@@ -25,6 +27,8 @@ export function verifyAndReplay(events: readonly HashedEvent[]): VerifyResult {
   let supply = 0n;
   let lastHash = "GENESIS";
   let lastReserveSnapshot: ReserveSnapshot | null = null;
+  let lastStressSnapshot: StressSnapshot | null = null;
+  let lastPolicyAction: PolicyAction | null = null;
   const usedBtcProofs = new Set<string>();
 
   for (let i = 0; i < events.length; i++) {
@@ -53,8 +57,31 @@ export function verifyAndReplay(events: readonly HashedEvent[]): VerifyResult {
           break;
         }
 
+        case "STRESS_SNAPSHOT": {
+          assertValidStressSnapshot(e.snapshot, e.at);
+          lastStressSnapshot = e.snapshot;
+          break;
+        }
+
         case "MINT": {
           assertNonNegative("mint.amount", e.amount);
+          if (!lastStressSnapshot) {
+            errors.push(`INVARIANT_FAIL mint missing stress snapshot at index ${i}`);
+            break;
+          }
+          if (!lastPolicyAction || lastPolicyAction.kind !== "ISSUE") {
+            errors.push(`INVARIANT_FAIL mint missing policy action at index ${i}`);
+            break;
+          }
+          const expected = stressAdjustedIssuanceAmount(
+            lastPolicyAction.amount,
+            lastStressSnapshot
+          );
+          if (expected !== e.amount) {
+            errors.push(
+              `INVARIANT_FAIL mint exceeds stress bounds at index ${i}: expected=${expected} actual=${e.amount}`
+            );
+          }
 
           // Reserve coverage is a precondition to issuance, if we have a snapshot.
           // If no snapshot exists yet, we don't invent one; we only enforce what is known.
@@ -146,6 +173,7 @@ export function verifyAndReplay(events: readonly HashedEvent[]): VerifyResult {
         case "POLICY_ACTION": {
           // Policy events are informational from the verifier’s perspective.
           // They can be cross-checked later, but they do not change supply.
+          lastPolicyAction = e.action;
           break;
         }
 

@@ -3,6 +3,7 @@ import type {
   BtcOwnershipProof,
   BtcPriceSnapshot,
   ReserveSnapshot,
+  StressSnapshot,
   USD,
   USDN
 } from "../types.js";
@@ -151,6 +152,21 @@ export function assertValidReserveSnapshot(snapshot: ReserveSnapshot): void {
     }
   } else if (btcValue > 0n) {
     throw new Error("INVARIANT_FAIL: btc reserve details missing");
+  }
+}
+
+export function assertValidStressSnapshot(snapshot: StressSnapshot, at: string): void {
+  assertNonNegativeNumber("stress.btc_drawdown_pct", snapshot.btc_drawdown_pct);
+  assertNonNegativeNumber("stress.btc_volatility_pct", snapshot.btc_volatility_pct);
+  if (!Number.isFinite(snapshot.timestamp)) {
+    throw new Error("INVARIANT_FAIL: stress.timestamp not finite");
+  }
+  const atMs = Date.parse(at);
+  if (!Number.isFinite(atMs)) {
+    throw new Error("INVARIANT_FAIL: stress.at invalid");
+  }
+  if (snapshot.timestamp > atMs) {
+    throw new Error("INVARIANT_FAIL: stress.timestamp in future");
   }
 }
 

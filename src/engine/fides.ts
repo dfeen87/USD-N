@@ -1,26 +1,40 @@
+import { CONFIG } from "../config.js";
 import type {
   BtcOwnershipProof,
   BtcPriceSnapshot,
   LedgerEvent,
   MacroTelemetry,
   ReserveSnapshot,
+  StressSnapshot,
   USDN
 } from "../types.js";
 import { Ledger } from "./ledger.js";
-import { btcBackedBurnAmount, btcBackedMintAmount, fidesPolicyDecision } from "./policy.js";
+import {
+  btcBackedBurnAmount,
+  btcBackedMintAmount,
+  fidesPolicyDecision,
+  issuanceMultiplier,
+  stressAdjustedIssuanceAmount
+} from "./policy.js";
 import {
   assertBtcReserveCoverage,
   assertReserveCoverage,
   assertStepLimit,
   assertValidBtcOwnershipProof,
   assertValidBtcPriceSnapshot,
-  assertValidReserveSnapshot
+  assertValidReserveSnapshot,
+  assertValidStressSnapshot
 } from "./invariants.js";
 
 export class FIDES {
   constructor(private readonly ledger: Ledger) {}
 
-  step(at: string, telemetry: MacroTelemetry, reserves: ReserveSnapshot): LedgerEvent[] {
+  step(
+    at: string,
+    telemetry: MacroTelemetry,
+    reserves: ReserveSnapshot,
+    stress: StressSnapshot
+  ): LedgerEvent[] {
     const produced: LedgerEvent[] = [];
 
     // record reserves snapshot (auditable)
@@ -36,14 +50,27 @@ export class FIDES {
     // execute policy
     if (action.kind === "ISSUE") {
       try {
-        assertStepLimit("ISSUE", action.amount);
+        assertValidStressSnapshot(stress, at);
+        this.ledger.record({ type: "STRESS_SNAPSHOT", at, snapshot: stress });
+        produced.push({ type: "STRESS_SNAPSHOT", at, snapshot: stress });
+
+        const multiplier = issuanceMultiplier(stress);
+        const adjustedAmount = stressAdjustedIssuanceAmount(action.amount, stress);
+        if (adjustedAmount < CONFIG.min_policy_step_cents) {
+          throw new Error(
+            `POLICY_REJECT: stress-adjusted issue below minimum (amount=${adjustedAmount}, multiplier=${multiplier.toFixed(4)})`
+          );
+        }
+
+        assertStepLimit("ISSUE", adjustedAmount);
         // enforce reserve coverage AFTER issue (conservative check)
-        const newSupply = this.ledger.getSupply() + action.amount;
+        const newSupply = this.ledger.getSupply() + adjustedAmount;
         assertBtcReserveCoverage(reserves, newSupply);
         assertReserveCoverage(reserves, newSupply);
 
-        this.ledger.mint(at, action.amount, action.reason);
-        produced.push({ type: "MINT", at, amount: action.amount, memo: action.reason });
+        const memo = `${action.reason}; stress_multiplier=${multiplier.toFixed(4)}`;
+        this.ledger.mint(at, adjustedAmount, memo);
+        produced.push({ type: "MINT", at, amount: adjustedAmount, memo });
       } catch (error) {
         const reason = error instanceof Error ? error.message : String(error);
         this.ledger.record({ type: "POLICY_REJECTED", at, action, reason });

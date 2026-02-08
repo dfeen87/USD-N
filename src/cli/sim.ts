@@ -1,7 +1,7 @@
 import { Ledger } from "../engine/ledger.js";
 import { FIDES } from "../engine/fides.js";
 import { makeReserveSnapshot } from "../engine/reserves.js";
-import type { MacroTelemetry } from "../types.js";
+import type { MacroTelemetry, StressSnapshot } from "../types.js";
 
 function isoNowPlusMinutes(m: number): string {
   const d = new Date(Date.now() + m * 60_000);
@@ -24,7 +24,13 @@ export function runSim(steps = 12): void {
     // reserves always cover supply in this toy sim; start with $1,000,000
     const reserves = makeReserveSnapshot(at, 1_000_000_00n);
 
-    const events = fides.step(at, telemetry, reserves);
+    const stress: StressSnapshot = {
+      btc_drawdown_pct: i < 4 ? 35 : i < 8 ? 12 : 4,
+      btc_volatility_pct: i < 4 ? 18 : i < 8 ? 10 : 6,
+      timestamp: Date.parse(at)
+    };
+
+    const events = fides.step(at, telemetry, reserves, stress);
     for (const e of events) {
       if (e.type === "MINT" || e.type === "BURN") {
         console.log(`${e.at} ${e.type} ${formatUSD(e.amount)} :: ${e.memo}`);
