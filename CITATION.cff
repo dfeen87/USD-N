@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+
+title: "USD-N: Deterministic USD Issuance with External BTC Constraint Modeling"
+
+message: >
+  If you use this software in research, simulations, audits, or policy analysis,
+  please cite it using the metadata below.
+
+type: software
+
+authors:
+  - family-names: Feeney
+    given-names: Don Michael
+
+repository-code: https://github.com/dfeen87/usd-n
+
+url: https://github.com/dfeen87/usd-n
+
+version: 2.1.0
+
+date-released: 2026-02-08
+
+license: MIT
+
+abstract: >
+  USD-N is a deterministic monetary simulation and policy modeling system that
+  treats Bitcoin as an external, non-sovereign constraint rather than a pegged
+  asset or issuance target. The system provides explicit reserve modeling,
+  auditable invariants, and programmatic USD/BTC alignment metrics—including
+  reserve coverage, BTC reserve share, and stress-adjusted issuance multipliers—
+  to support simulations, governance analysis, and audit workflows without
+  introducing custody, convertibility, or price coupling.
