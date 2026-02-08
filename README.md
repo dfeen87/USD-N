@@ -1,23 +1,25 @@
 # USD-N
 
-**A Deterministic, Reserve-Constrained Dollar Reference System**
+**A Deterministic, Reserve-Constrained Dollar Tender**
+
 *Governed by the FIDES Protocol*
 
 ---
 
 ## Overview
 
-**USD-N** is a **digitally native monetary reference system** designed to model, enforce, and audit
-U.S. dollar–denominated supply under explicit, rule-based constraints.
+**USD-N** is a **digitally native monetary system** that defines, enforces, and audits
+U.S. dollar–denominated **tender** under explicit, rule-based constraints.
 
-It is **not legal tender**, not a retail currency, and not a discretionary monetary authority.
-USD-N defines a **programmable dollar rail** whose issuance, redemption, and contraction are
+USD-N is **not a retail currency**, not a discretionary monetary authority, and not a custodial system.
+It defines a **programmable dollar rail** whose issuance, redemption, and contraction are
 **derivable from verifiable reserves and deterministic policy rules**, rather than human judgment.
 
 USD-N is governed by the **FIDES Protocol**, an invariant-driven fiscal engine that enforces
 monetary discipline, replayable auditability, and counter-cyclical behavior through code.
 
-Protocol definition only. Custody, deployment, and user interfaces are explicitly out of scope.
+Protocol definition and core implementation only.
+Custody, deployment, distribution, and user interfaces are explicitly out of scope.
 
 ---
 
@@ -44,7 +46,7 @@ USD-N is built on a small set of non-negotiable principles:
 
 ## What USD-N Is
 
-* A **deterministic dollar reference system**
+* A **deterministic U.S. dollar tender**
 * **Reserve-constrained** rather than trust-based
 * **Replay-verifiable** down to individual issuance decisions
 * **Counter-cyclical by design**
@@ -58,10 +60,10 @@ USD-N is built on a small set of non-negotiable principles:
 * ❌ Not a speculative cryptocurrency
 * ❌ Not a privately issued stablecoin
 * ❌ Not a CBDC or surveillance system
-* ❌ Not a bank, issuer, or custodian
-* ❌ Not a promise of convertibility
+* ❌ Not a bank, custodian, or payment app
+* ❌ Not a discretionary monetary authority
 
-USD-N defines **rules and invariants**, not financial products.
+USD-N defines **monetary validity rules and invariants**, not financial products or custodial services.
 
 ---
 
@@ -90,11 +92,11 @@ All failures emit explicit `POLICY_REJECTED` events.
 
 ## Counter-Cyclical Supply Control
 
-USD-N incorporates **deterministic stress telemetry** to model real-world monetary tightening.
+USD-N incorporates **deterministic stress telemetry** to encode real-world monetary tightening.
 
 The protocol supports:
 
-* Explicit **stress snapshots** (e.g. drawdown, volatility inputs)
+* Explicit **stress snapshots** (e.g. drawdown and volatility inputs)
 * A **monotonic issuance multiplier** bounded in `(0, 1]`
 * Automatic **issuance tightening under stress**
 * Unrestricted burns and redemptions
@@ -119,7 +121,7 @@ It enforces:
 * Explicit rejection on invariant violation
 * Full replay and audit of economic validity
 
-FIDES does not “decide” outcomes — it **derives** them.
+FIDES does not *decide* outcomes — it **derives** them.
 
 ---
 
@@ -137,10 +139,10 @@ USD-N remains internally consistent even if all external inputs are removed.
 
 ## Status
 
-This repository defines the **core specification and reference implementation** for USD-N.
+This repository defines the **core specification and canonical implementation** for USD-N.
 
 * Experimental
-* Non-legal-tender
+* Dollar-denominated tender definition
 * Open specification
 * Designed for audit, simulation, and research
 * Intended for institutional-grade review
