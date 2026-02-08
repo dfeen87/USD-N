@@ -86,15 +86,16 @@ export function validateTenderState(state: TenderLedgerState): string[] {
       }
 
       const newSupply = state.currentSupply + event.amount;
-      if (!state.lastReserveSnapshot) {
+      const reserveSnapshot = state.lastReserveSnapshot;
+      if (!reserveSnapshot) {
         errors.push("INVARIANT_FAIL: mint missing reserve snapshot");
         break;
       }
       pushInvariant(errors, () =>
-        assertBtcReserveCoverage(state.lastReserveSnapshot, newSupply)
+        assertBtcReserveCoverage(reserveSnapshot, newSupply)
       );
       pushInvariant(errors, () =>
-        assertReserveCoverage(state.lastReserveSnapshot, newSupply)
+        assertReserveCoverage(reserveSnapshot, newSupply)
       );
       break;
     }
@@ -142,15 +143,16 @@ export function validateTenderState(state: TenderLedgerState): string[] {
       }
 
       const newSupply = state.currentSupply + event.amount;
-      if (!state.lastReserveSnapshot) {
+      const reserveSnapshot = state.lastReserveSnapshot;
+      if (!reserveSnapshot) {
         errors.push("INVARIANT_FAIL: btc issue missing reserve snapshot");
         break;
       }
       pushInvariant(errors, () =>
-        assertBtcReserveCoverage(state.lastReserveSnapshot, newSupply)
+        assertBtcReserveCoverage(reserveSnapshot, newSupply)
       );
       pushInvariant(errors, () =>
-        assertReserveCoverage(state.lastReserveSnapshot, newSupply)
+        assertReserveCoverage(reserveSnapshot, newSupply)
       );
 
       if (state.lastPolicyAction?.kind === "BTC_BACKED_ISSUE") {
@@ -318,7 +320,7 @@ function enforceBtcPolicyMatch(
       `INVARIANT_FAIL: btc ${verb} price source mismatch vs policy action (policy=${policy.price_snapshot.source} event=${event.price_snapshot.source})`
     );
   }
-  if (policy.kind === "BTC_BACKED_ISSUE") {
+  if (policy.kind === "BTC_BACKED_ISSUE" && "proof" in event) {
     if (policy.proof.btc_address !== event.proof.btc_address) {
       errors.push(
         `INVARIANT_FAIL: btc ${verb} proof address mismatch vs policy action`
