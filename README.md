@@ -215,6 +215,15 @@ This repository defines the **core specification and canonical implementation** 
 
 ---
 
+## Continuous Integration
+
+USD-N’s CI validates **buildability**, **core invariants**, and **deterministic replay** on every
+commit. It does **not** test economic outcomes, market behavior, or performance; those remain
+explicitly out of scope. The goal is to protect mechanical correctness and governance safety
+through reproducible checks.
+
+---
+
 ## Philosophy
 
 > Monetary trust should not be requested.
