@@ -18,7 +18,7 @@ export async function resolveReserves(
       UST: each,
       GOLD: each,
       ENERGY: each,
-      COMMODITY: attestation.total_value_usd_cents - each * BigInt(ASSET_COUNT - 1), // keep sum exact
+      COMMODITY: attestation.total_value_usd_cents - each * 4n, // keep sum exact
       BTC: each
     },
     attestation_id: attestation.signature
