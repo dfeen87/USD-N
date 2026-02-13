@@ -6,15 +6,20 @@ export async function resolveReserves(
 ): Promise<ReserveSnapshot> {
   const attestation = await oracle.latest();
 
+  // Distribute total value evenly across all 5 assets
+  // COMMODITY gets any remainder to keep sum exact
+  const ASSET_COUNT = 5; // UST, GOLD, ENERGY, COMMODITY, BTC
+  const each = attestation.total_value_usd_cents / BigInt(ASSET_COUNT);
+
   return {
     at: attestation.at,
     total_value_usd: attestation.total_value_usd_cents,
     by_asset_usd: {
-      UST: attestation.total_value_usd_cents,
-      GOLD: 0n,
-      ENERGY: 0n,
-      COMMODITY: 0n,
-      BTC: 0n
+      UST: each,
+      GOLD: each,
+      ENERGY: each,
+      COMMODITY: attestation.total_value_usd_cents - each * 4n, // keep sum exact
+      BTC: each
     },
     attestation_id: attestation.signature
   };
