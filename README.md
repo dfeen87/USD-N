@@ -201,9 +201,9 @@ See [API.md](./API.md) for complete API documentation.
 Create your own monetary policy scenarios programmatically:
 
 ```typescript
-import { Ledger } from './dist/engine/ledger.js';
-import { FIDES } from './dist/engine/fides.js';
-import { makeReserveSnapshot } from './dist/engine/reserves.js';
+import { Ledger } from './dist/src/engine/ledger.js';
+import { FIDES } from './dist/src/engine/fides.js';
+import { makeReserveSnapshot } from './dist/src/engine/reserves.js';
 
 // Create a new ledger and FIDES instance
 const ledger = new Ledger();
@@ -416,9 +416,9 @@ curl http://localhost:3000/api/ledger/events
 #### Example 1: Create a Custom Simulation
 
 ```typescript
-import { Ledger } from './dist/engine/ledger.js';
-import { FIDES } from './dist/engine/fides.js';
-import { makeReserveSnapshot } from './dist/engine/reserves.js';
+import { Ledger } from './dist/src/engine/ledger.js';
+import { FIDES } from './dist/src/engine/fides.js';
+import { makeReserveSnapshot } from './dist/src/engine/reserves.js';
 
 const ledger = new Ledger();
 const fides = new FIDES(ledger);
@@ -453,9 +453,9 @@ for (let month = 0; month < 6; month++) {
 #### Example 2: Verify Reserve Coverage
 
 ```typescript
-import { Ledger } from './dist/engine/ledger.js';
-import { makeReserveSnapshot } from './dist/engine/reserves.js';
-import { buildAlignmentReport } from './dist/engine/alignment.js';
+import { Ledger } from './dist/src/engine/ledger.js';
+import { makeReserveSnapshot } from './dist/src/engine/reserves.js';
+import { buildAlignmentReport } from './dist/src/engine/alignment.js';
 
 const ledger = new Ledger();
 const at = new Date().toISOString();
@@ -581,7 +581,7 @@ All failures emit explicit `POLICY_REJECTED` events.
 ### Code Example: Reserve Snapshot
 
 ```typescript
-import { makeReserveSnapshot } from './dist/engine/reserves.js';
+import { makeReserveSnapshot } from './dist/src/engine/reserves.js';
 
 // Create a reserve snapshot: $1M total, $300K in BTC
 const reserves = makeReserveSnapshot(
@@ -694,8 +694,8 @@ FIDES does not *decide* outcomes — it **derives** them.
 ### Code Example: FIDES Step Execution
 
 ```typescript
-import { FIDES } from './dist/engine/fides.js';
-import { Ledger } from './dist/engine/ledger.js';
+import { FIDES } from './dist/src/engine/fides.js';
+import { Ledger } from './dist/src/engine/ledger.js';
 
 const ledger = new Ledger();
 const fides = new FIDES(ledger);
@@ -1011,9 +1011,9 @@ Create a new file in the project:
 
 ```typescript
 // my-scenario.ts
-import { Ledger } from './dist/engine/ledger.js';
-import { FIDES } from './dist/engine/fides.js';
-import { makeReserveSnapshot } from './dist/engine/reserves.js';
+import { Ledger } from './dist/src/engine/ledger.js';
+import { FIDES } from './dist/src/engine/fides.js';
+import { makeReserveSnapshot } from './dist/src/engine/reserves.js';
 
 const ledger = new Ledger();
 const fides = new FIDES(ledger);
