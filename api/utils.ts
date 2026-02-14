@@ -43,6 +43,17 @@ export function sendJSON(res: ServerResponse, statusCode: number, data: any): vo
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 100; // 100 requests per minute
+const CLEANUP_INTERVAL_MS = 300000; // 5 minutes
+
+// Periodic cleanup of expired entries to prevent memory leaks
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitMap.entries()) {
+    if (now > entry.resetAt) {
+      rateLimitMap.delete(key);
+    }
+  }
+}, CLEANUP_INTERVAL_MS);
 
 export function checkRateLimit(identifier: string): boolean {
   const now = Date.now();
@@ -75,7 +86,11 @@ export function getClientIdentifier(req: IncomingMessage): string {
 
 /**
  * Verify JWT token (if JWT auth is enabled)
- * For now, this is a placeholder - JWT auth is optional and off by default
+ * 
+ * WARNING: This is a simple bearer token implementation for demonstration.
+ * For production use with authentication enabled, implement proper JWT verification
+ * using a library like 'jsonwebtoken' with signature validation, expiration checks,
+ * and claim verification.
  */
 export function verifyJWT(token: string): boolean {
   const jwtSecret = process.env.USDN_JWT_SECRET;
@@ -85,8 +100,8 @@ export function verifyJWT(token: string): boolean {
     return true;
   }
   
-  // TODO: Implement proper JWT verification when needed
-  // For now, just check if token matches secret (simple bearer token)
+  // Simple bearer token check (for demonstration only)
+  // TODO: Implement proper JWT verification for production
   return token === jwtSecret;
 }
 
