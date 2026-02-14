@@ -23,10 +23,30 @@ export function makeReserveSnapshot(
     BTC: btc_value_usd
   } satisfies Record<ReserveAsset, USD>;
 
-  return {
+  const snapshot: ReserveSnapshot = {
     at,
     total_value_usd,
     by_asset_usd,
     attestation_id: `attest-${at}`
   };
+
+  // If BTC value is specified, add BTC details
+  if (btc_value_usd > 0n) {
+    // Use a fixed price for simulation (e.g., $100,000 per BTC)
+    const btcPriceUsd = 100000;
+    const btcAmount = Number(btc_value_usd) / 100 / btcPriceUsd;
+    
+    snapshot.btc = {
+      asset: "BTC",
+      amount_btc: btcAmount,
+      value_usd: btc_value_usd,
+      price_snapshot: {
+        price_usd: btcPriceUsd,
+        timestamp: Date.parse(at),
+        source: "simulation"
+      }
+    };
+  }
+
+  return snapshot;
 }

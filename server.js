@@ -3,8 +3,8 @@ import { readFile } from 'fs/promises';
 import { join, extname } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { Ledger } from './dist/engine/ledger.js';
-import { FIDES } from './dist/engine/fides.js';
+import { Ledger } from './dist/src/engine/ledger.js';
+import { FIDES } from './dist/src/engine/fides.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
