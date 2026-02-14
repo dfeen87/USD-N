@@ -23,8 +23,8 @@ const MIME_TYPES = {
 };
 
 // Global USD-N node instance
-const globalLedger = new Ledger();
-const globalFIDES = new FIDES(globalLedger);
+let globalLedger = new Ledger();
+let globalFIDES = new FIDES(globalLedger);
 
 // Helper to parse JSON request body
 async function parseBody(req) {
@@ -205,8 +205,9 @@ async function handleAPI(req, res) {
 
     // POST /api/ledger/reset - Reset the ledger (for testing)
     if (path === '/api/ledger/reset' && method === 'POST') {
-      // Create new instances
-      Object.assign(globalLedger, new Ledger());
+      // Create new instances to properly reset state
+      globalLedger = new Ledger();
+      globalFIDES = new FIDES(globalLedger);
       sendJSON(res, 200, { success: true, message: 'Ledger reset' });
       return;
     }
@@ -215,10 +216,14 @@ async function handleAPI(req, res) {
     sendJSON(res, 404, { error: 'API endpoint not found' });
   } catch (error) {
     console.error('API Error:', error);
-    sendJSON(res, 500, { 
-      error: error.message || 'Internal server error',
-      details: error.stack 
-    });
+    const response = { 
+      error: error.message || 'Internal server error'
+    };
+    // Only include stack traces in development
+    if (process.env.NODE_ENV === 'development') {
+      response.details = error.stack;
+    }
+    sendJSON(res, 500, response);
   }
 }
 

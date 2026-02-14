@@ -112,13 +112,13 @@ async function main() {
   });
   console.log('   Result:', issueResult.success ? 'SUCCESS' : 'FAILED');
   console.log('   New Supply:', issueResult.newSupply, 'cents');
-  console.log('   Issued:', parseInt(issueResult.newSupply) / 100, 'USD');
+  console.log('   Issued:', Number(BigInt(issueResult.newSupply) / 100n), 'USD');
   console.log('');
   
   // 5. Get current supply
   console.log('5. Checking current supply...');
   const supply = await request('GET', '/ledger/supply');
-  console.log('   Supply:', supply.supply, 'cents =', parseInt(supply.supply) / 100, 'USD');
+  console.log('   Supply:', supply.supply, 'cents =', Number(BigInt(supply.supply) / 100n), 'USD');
   console.log('');
   
   // 6. Get all events
