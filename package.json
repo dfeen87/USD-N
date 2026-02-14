@@ -8,10 +8,12 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
+    "start:prod": "tsc -p tsconfig.json && node main.ts",
     "verify": "node dist/cli/verify.js",
     "test": "tsc -p tsconfig.json && node --test dist/engine/*.test.js",
     "dev": "tsc -w -p tsconfig.json",
-    "serve": "node server.js"
+    "serve": "node server.js",
+    "serve:prod": "npm run build && node main.ts"
   },
   "devDependencies": {
     "typescript": "^5.6.3"
