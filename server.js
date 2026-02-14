@@ -23,12 +23,24 @@ const MIME_TYPES = {
 const server = createServer(async (req, res) => {
   try {
     let filePath = req.url === '/' ? '/index.html' : req.url;
-    filePath = join(PUBLIC_DIR, filePath);
     
-    const ext = extname(filePath);
+    // Remove query string and sanitize path
+    filePath = filePath.split('?')[0];
+    
+    // Resolve the full path
+    const resolvedPath = join(PUBLIC_DIR, filePath);
+    
+    // Security check: ensure the resolved path is within PUBLIC_DIR
+    if (!resolvedPath.startsWith(PUBLIC_DIR)) {
+      res.writeHead(403, { 'Content-Type': 'text/plain' });
+      res.end('403 Forbidden');
+      return;
+    }
+    
+    const ext = extname(resolvedPath);
     const contentType = MIME_TYPES[ext] || 'text/plain';
     
-    const content = await readFile(filePath);
+    const content = await readFile(resolvedPath);
     res.writeHead(200, { 'Content-Type': contentType });
     res.end(content);
   } catch (error) {

@@ -34,6 +34,9 @@ class Ledger {
 class FIDESSimulator {
     constructor(ledger) {
         this.ledger = ledger;
+        // Policy parameters for counter-cyclical supply control
+        this.BURN_RATE = 0.02;  // 2% contraction during high inflation
+        this.ISSUE_RATE = 0.05; // 5% expansion during low inflation with reserve coverage
     }
 
     step(at, telemetry, reserves, stress) {
@@ -49,7 +52,7 @@ class FIDESSimulator {
         // Policy decision
         if (telemetry.cpi_yoy_bps > 300) {
             // High inflation -> burn to contract supply
-            const burnAmount = BigInt(Math.floor(Number(supply) * 0.02));
+            const burnAmount = BigInt(Math.floor(Number(supply) * this.BURN_RATE));
             if (burnAmount > 0n && supply > 0n) {
                 const actualBurn = burnAmount < supply ? burnAmount : supply;
                 this.ledger.burn(actualBurn, at, "Counter-cyclical contraction");
@@ -61,7 +64,7 @@ class FIDESSimulator {
             }
         } else if (telemetry.cpi_yoy_bps < 200) {
             // Low inflation -> potentially issue if reserves allow
-            const maxIssue = BigInt(Math.floor(Number(reserveValue) * stressMultiplier * 0.05));
+            const maxIssue = BigInt(Math.floor(Number(reserveValue) * stressMultiplier * this.ISSUE_RATE));
             if (maxIssue > 0n) {
                 this.ledger.mint(maxIssue, at, "Counter-cyclical expansion");
                 events.push({
@@ -141,6 +144,23 @@ function isoNowPlusMinutes(m) {
 }
 
 function runSimulation(steps) {
+    // Simulation scenario parameters
+    // Three-phase economic scenario: High inflation -> Stable -> Low inflation
+    const HIGH_INFLATION_PHASE_END = 4;
+    const STABLE_PHASE_END = 8;
+    const HIGH_INFLATION_CPI_BPS = 420;  // 4.20% CPI year-over-year
+    const STABLE_CPI_BPS = 240;          // 2.40% CPI year-over-year  
+    const LOW_INFLATION_CPI_BPS = 120;   // 1.20% CPI year-over-year
+    
+    // Stress scenario parameters
+    // Three stress levels corresponding to economic phases
+    const HIGH_STRESS_DRAWDOWN_PCT = 35;     // 35% BTC drawdown (high stress)
+    const HIGH_STRESS_VOLATILITY_PCT = 18;   // 18% BTC volatility (high stress)
+    const MODERATE_STRESS_DRAWDOWN_PCT = 12; // 12% BTC drawdown (moderate stress)
+    const MODERATE_STRESS_VOLATILITY_PCT = 10; // 10% BTC volatility (moderate stress)
+    const LOW_STRESS_DRAWDOWN_PCT = 4;       // 4% BTC drawdown (low stress)
+    const LOW_STRESS_VOLATILITY_PCT = 6;     // 6% BTC volatility (low stress)
+    
     const ledger = new Ledger();
     const fides = new FIDESSimulator(ledger);
     const log = [];
@@ -149,7 +169,9 @@ function runSimulation(steps) {
         const at = isoNowPlusMinutes(i);
         const telemetry = {
             at,
-            cpi_yoy_bps: i < 4 ? 420 : i < 8 ? 240 : 120, // high -> stable -> low
+            cpi_yoy_bps: i < HIGH_INFLATION_PHASE_END ? HIGH_INFLATION_CPI_BPS 
+                       : i < STABLE_PHASE_END ? STABLE_CPI_BPS 
+                       : LOW_INFLATION_CPI_BPS,
             gdp_qoq_bps: 200,
             unemployment_bps: 450
         };
@@ -157,8 +179,12 @@ function runSimulation(steps) {
         const reserves = makeReserveSnapshot(at, 1_000_000_00n);
         
         const stress = {
-            btc_drawdown_pct: i < 4 ? 35 : i < 8 ? 12 : 4,
-            btc_volatility_pct: i < 4 ? 18 : i < 8 ? 10 : 6,
+            btc_drawdown_pct: i < HIGH_INFLATION_PHASE_END ? HIGH_STRESS_DRAWDOWN_PCT
+                            : i < STABLE_PHASE_END ? MODERATE_STRESS_DRAWDOWN_PCT
+                            : LOW_STRESS_DRAWDOWN_PCT,
+            btc_volatility_pct: i < HIGH_INFLATION_PHASE_END ? HIGH_STRESS_VOLATILITY_PCT
+                              : i < STABLE_PHASE_END ? MODERATE_STRESS_VOLATILITY_PCT
+                              : LOW_STRESS_VOLATILITY_PCT,
             timestamp: Date.parse(at)
         };
         
