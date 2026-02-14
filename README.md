@@ -203,6 +203,27 @@ USD-N remains internally consistent even if all external inputs are removed.
 
 ---
 
+## Web Interface
+
+USD-N is now accessible via a web interface for interactive demonstration.
+
+To run the web interface:
+
+```bash
+npm run serve
+```
+
+Then open your browser to `http://localhost:3000`
+
+The web interface provides:
+
+* Interactive protocol simulation
+* Real-time event logging
+* Live supply and reserve metrics
+* Visual demonstration of deterministic issuance logic
+
+---
+
 ## Status
 
 This repository defines the **core specification and canonical implementation** for USD-N.
@@ -212,6 +233,7 @@ This repository defines the **core specification and canonical implementation** 
 * Open specification
 * Designed for audit, simulation, and research
 * Intended for institutional-grade review
+* **Now accessible via web interface**
 
 ---
 
