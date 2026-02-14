@@ -285,6 +285,189 @@ For a working example script, see [examples/api_example.js](./examples/api_examp
 
 ---
 
+## Deploying USD-N as a Public REST API
+
+USD-N can be deployed as a production-ready REST API service on platforms like Railway, Heroku, or any Docker-compatible host.
+
+### Production API Features
+
+The production API (`main.ts`) includes:
+
+* ✅ **Production-grade endpoints** - Health checks, ledger operations, FIDES scoring, BTC backing analysis
+* ✅ **Deterministic operations** - All monetary operations are safe, bounded, and reproducible
+* ✅ **Rate limiting** - 100 requests/minute per IP address
+* ✅ **Optional JWT authentication** - Disabled by default, enable via environment variable
+* ✅ **CORS enabled** - Cross-origin requests supported
+* ✅ **Environment configuration** - Full control via environment variables
+* ✅ **OpenAPI compatible** - JSON-only responses with clear error messages
+* ✅ **Docker optimized** - Multi-stage builds, non-root user, health checks
+
+### Local Development
+
+Run the production server locally:
+
+```bash
+# Install dependencies
+npm install
+
+# Build TypeScript
+npm run build
+
+# Start production server
+npm run serve:prod
+```
+
+The server will start on port 8080 (or PORT environment variable).
+
+### Docker Deployment
+
+Build and run with Docker:
+
+```bash
+# Build the image
+docker build -t usd-n-api .
+
+# Run the container
+docker run -p 8080:8080 \
+  -e USDN_ENV=production \
+  -e USDN_LOG_LEVEL=info \
+  usd-n-api
+```
+
+Access the API at `http://localhost:8080/api/health`
+
+### Railway Deployment (Free Tier)
+
+Deploy to Railway with one command:
+
+#### 1. Install Railway CLI
+
+```bash
+npm install -g @railway/cli
+```
+
+#### 2. Login to Railway
+
+```bash
+railway login
+```
+
+#### 3. Initialize and Deploy
+
+```bash
+# Create new project
+railway init
+
+# Deploy
+railway up
+```
+
+#### 4. Set Environment Variables
+
+```bash
+railway variables set USDN_ENV=production
+railway variables set USDN_LOG_LEVEL=info
+railway variables set USDN_NODE_ID=railway-node-1
+
+# Optional: Enable JWT authentication
+railway variables set USDN_JWT_SECRET=$(openssl rand -base64 32)
+```
+
+#### 5. View Logs
+
+```bash
+railway logs
+```
+
+Your API will be automatically deployed and accessible via Railway's provided URL.
+
+### Environment Variables
+
+Configure your deployment using these environment variables:
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `USDN_ENV` | Environment mode (`production`, `development`, `test`) | `development` | No |
+| `USDN_JWT_SECRET` | JWT secret for authentication (leave empty to disable) | `` | No |
+| `USDN_LOG_LEVEL` | Logging level (`debug`, `info`, `warn`, `error`) | `info` | No |
+| `USDN_NODE_ID` | Unique node identifier | Auto-generated | No |
+| `PORT` | Server port | `8080` | No |
+
+See `.env.example` for a complete template.
+
+### API Endpoints
+
+The production API exposes these endpoints:
+
+**Health & Status:**
+- `GET /api/health` - Basic health check
+- `GET /api/status` - Detailed node status with version, uptime, config
+
+**Ledger Operations:**
+- `GET /api/ledger/state` - Full ledger state snapshot
+- `GET /api/ledger/transactions?page=1&per_page=50` - Paginated transaction history
+- `POST /api/ledger/mint` - Mint USD-N (bounded: max $1M per operation)
+- `POST /api/ledger/burn` - Burn USD-N (bounded: max $1M per operation)
+- `POST /api/ledger/transfer` - Transfer USD-N between accounts (max $100K per operation)
+
+**FIDES Protocol:**
+- `GET /api/fides/score` - Compute FIDES trust score
+- `POST /api/fides/step` - Execute policy step
+- `POST /api/fides/btc-issue` - Issue BTC-backed USD-N
+- `POST /api/fides/btc-burn` - Burn BTC-backed USD-N
+
+**BTC Backing:**
+- `GET /api/btc/backing` - BTC backing ratio and reserve model
+
+All endpoints return JSON and support CORS. Write operations (POST) require JWT authentication if `USDN_JWT_SECRET` is set.
+
+### Health Checks
+
+Railway and Docker health checks use:
+
+```
+GET /api/health
+```
+
+Returns 200 OK when service is healthy.
+
+### Scaling (Optional)
+
+For high-traffic deployments:
+
+1. **Horizontal scaling**: Deploy multiple instances behind a load balancer
+2. **Database persistence**: Currently uses in-memory state; add Redis/PostgreSQL for persistence
+3. **Rate limiting**: Adjust rate limits in `api/utils.ts`
+4. **Authentication**: Enable JWT auth for production use
+
+### Security Notes
+
+⚠️ **Important Security Guidelines:**
+
+- Never commit `.env` files with real secrets
+- Enable `USDN_JWT_SECRET` for production deployments
+- Use HTTPS in production (Railway provides this automatically)
+- Monitor rate limiting logs for abuse
+- Review CORS settings for production domains
+- Keep TypeScript and Node.js dependencies updated
+
+### Monitoring
+
+Monitor your deployment:
+
+```bash
+# Railway logs
+railway logs --follow
+
+# Docker logs
+docker logs -f <container-id>
+
+# Health check
+curl https://your-app.railway.app/api/health
+```
+
+---
+
 ## Status
 
 This repository defines the **core specification and canonical implementation** for USD-N.
