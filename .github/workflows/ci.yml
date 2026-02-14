@@ -26,4 +26,4 @@ jobs:
         run: npm test
 
       - name: Verify deterministic replay
-        run: node dist/cli/verify.js examples/valid_history.jsonl --strict
+        run: node dist/src/cli/verify.js examples/valid_history.jsonl --strict
