@@ -1,0 +1,553 @@
+openapi: 3.0.3
+info:
+  title: USD-N Production REST API
+  version: 0.1.0
+  description: |
+    Production-ready REST API for the USD-N Bitcoin-backed stablecoin protocol.
+    
+    This API exposes deterministic, safe, bounded endpoints for ledger operations,
+    FIDES trust scoring, and Bitcoin backing analysis.
+    
+    **Features:**
+    - Deterministic ledger operations
+    - FIDES trust scoring
+    - BTC backing analysis
+    - Rate limiting (100 req/min per IP)
+    - CORS enabled
+    - Optional JWT authentication
+    
+  contact:
+    name: USD-N Project
+    url: https://github.com/dfeen87/USD-N
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080/api
+    description: Local development server
+  - url: https://your-app.railway.app/api
+    description: Railway production deployment
+
+tags:
+  - name: health
+    description: Health and status endpoints
+  - name: ledger
+    description: Ledger state and monetary operations
+  - name: fides
+    description: FIDES protocol operations
+  - name: btc
+    description: Bitcoin backing and reserves
+
+paths:
+  /health:
+    get:
+      tags: [health]
+      summary: Basic health check
+      description: Returns basic health status for monitoring and load balancers
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  timestamp:
+                    type: string
+                    format: date-time
+                  service:
+                    type: string
+                    example: USD-N REST API
+
+  /status:
+    get:
+      tags: [health]
+      summary: Detailed node status
+      description: Returns detailed information about node status, configuration, and uptime
+      operationId: getStatus
+      responses:
+        '200':
+          description: Node status information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeStatus'
+
+  /ledger/state:
+    get:
+      tags: [ledger]
+      summary: Get ledger state
+      description: Returns full ledger state snapshot including supply and latest hash
+      operationId: getLedgerState
+      responses:
+        '200':
+          description: Ledger state snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LedgerState'
+
+  /ledger/transactions:
+    get:
+      tags: [ledger]
+      summary: Get paginated transactions
+      description: Returns paginated transaction history from the ledger
+      operationId: getTransactions
+      parameters:
+        - name: page
+          in: query
+          description: Page number (starts at 1)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          description: Items per page (max 100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Paginated transactions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionList'
+        '400':
+          description: Invalid pagination parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /ledger/mint:
+    post:
+      tags: [ledger]
+      summary: Mint USD-N tokens
+      description: |
+        Mint new USD-N tokens. Bounded to $1M per operation for safety.
+        Requires JWT authentication if USDN_JWT_SECRET is set.
+      operationId: mintTokens
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MintRequest'
+      responses:
+        '200':
+          description: Mint successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MintResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized (if JWT auth enabled)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /ledger/burn:
+    post:
+      tags: [ledger]
+      summary: Burn USD-N tokens
+      description: |
+        Burn USD-N tokens. Bounded to $1M per operation for safety.
+        Requires JWT authentication if USDN_JWT_SECRET is set.
+      operationId: burnTokens
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BurnRequest'
+      responses:
+        '200':
+          description: Burn successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BurnResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized (if JWT auth enabled)
+
+  /ledger/transfer:
+    post:
+      tags: [ledger]
+      summary: Transfer USD-N tokens
+      description: |
+        Transfer USD-N between accounts. Bounded to $100K per operation.
+        Note: This is a simulation endpoint as the core ledger tracks supply, not accounts.
+        Requires JWT authentication if USDN_JWT_SECRET is set.
+      operationId: transferTokens
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+      responses:
+        '200':
+          description: Transfer recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized (if JWT auth enabled)
+
+  /fides/score:
+    get:
+      tags: [fides]
+      summary: Get FIDES trust score
+      description: |
+        Calculate FIDES trust score based on policy adherence, ledger integrity,
+        and reserve coverage history.
+      operationId: getFidesScore
+      responses:
+        '200':
+          description: FIDES trust score
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FidesScore'
+
+  /btc/backing:
+    get:
+      tags: [btc]
+      summary: Get BTC backing ratio
+      description: |
+        Returns Bitcoin backing ratio, reserve information, and supply breakdown.
+      operationId: getBtcBacking
+      responses:
+        '200':
+          description: BTC backing information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BtcBacking'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: JWT bearer token (only required if USDN_JWT_SECRET is set)
+
+  schemas:
+    NodeStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          example: online
+        version:
+          type: string
+          example: 0.1.0
+        uptime_ms:
+          type: integer
+          example: 123456
+        uptime_human:
+          type: string
+          example: 2h 3m
+        config:
+          type: object
+          properties:
+            environment:
+              type: string
+              example: production
+            node_id:
+              type: string
+              example: node-abc123
+            log_level:
+              type: string
+              example: info
+        ledger:
+          type: object
+          properties:
+            supply:
+              type: string
+              example: "1000000"
+            total_events:
+              type: integer
+              example: 5
+            latest_event_hash:
+              type: string
+              example: abc123...
+        timestamp:
+          type: string
+          format: date-time
+
+    LedgerState:
+      type: object
+      properties:
+        supply:
+          type: string
+          description: Current supply in cents
+          example: "1000000"
+        total_events:
+          type: integer
+          example: 5
+        latest_event_hash:
+          type: string
+          example: abc123...
+        timestamp:
+          type: string
+          format: date-time
+
+    TransactionList:
+      type: object
+      properties:
+        transactions:
+          type: array
+          items:
+            type: object
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+            per_page:
+              type: integer
+            total_items:
+              type: integer
+            total_pages:
+              type: integer
+            has_next:
+              type: boolean
+            has_prev:
+              type: boolean
+
+    MintRequest:
+      type: object
+      required: [amount, memo]
+      properties:
+        amount:
+          type: string
+          description: Amount in cents (max 100000000 = $1M)
+          example: "1000000"
+        memo:
+          type: string
+          description: Description of mint operation
+          example: Initial issuance
+        at:
+          type: string
+          format: date-time
+          description: Optional timestamp (defaults to now)
+
+    MintResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        amount:
+          type: string
+          example: "1000000"
+        new_supply:
+          type: string
+          example: "1000000"
+        timestamp:
+          type: string
+          format: date-time
+
+    BurnRequest:
+      type: object
+      required: [amount, memo]
+      properties:
+        amount:
+          type: string
+          description: Amount in cents (max 100000000 = $1M)
+          example: "500000"
+        memo:
+          type: string
+          description: Description of burn operation
+          example: Excess supply burn
+        at:
+          type: string
+          format: date-time
+
+    BurnResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        amount:
+          type: string
+        new_supply:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    TransferRequest:
+      type: object
+      required: [from, to, amount]
+      properties:
+        from:
+          type: string
+          example: account-1
+        to:
+          type: string
+          example: account-2
+        amount:
+          type: string
+          description: Amount in cents (max 10000000 = $100K)
+          example: "50000"
+        memo:
+          type: string
+          example: Payment for services
+        at:
+          type: string
+          format: date-time
+
+    TransferResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        from:
+          type: string
+        to:
+          type: string
+        amount:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        note:
+          type: string
+
+    FidesScore:
+      type: object
+      properties:
+        trust_score:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 87.5
+        score_breakdown:
+          type: object
+          properties:
+            base_score:
+              type: number
+            policy_rejection_penalty:
+              type: number
+            btc_backing_bonus:
+              type: number
+            reserve_attestation_bonus:
+              type: number
+        ledger_metrics:
+          type: object
+          properties:
+            total_events:
+              type: integer
+            mint_events:
+              type: integer
+            burn_events:
+              type: integer
+            btc_backed_events:
+              type: integer
+            policy_rejections:
+              type: integer
+            reserve_snapshots:
+              type: integer
+        interpretation:
+          type: string
+          example: Good - Consistent policy compliance
+        timestamp:
+          type: string
+          format: date-time
+
+    BtcBacking:
+      type: object
+      properties:
+        backing_ratio_percent:
+          type: number
+          example: 150.5
+        btc_reserves:
+          type: object
+          properties:
+            total_btc:
+              type: number
+            value_usd_cents:
+              type: string
+            latest_btc_price_usd:
+              type: number
+            last_updated:
+              type: string
+              format: date-time
+              nullable: true
+        supply_breakdown:
+          type: object
+          properties:
+            total_supply_cents:
+              type: string
+            btc_backed_supply_cents:
+              type: string
+            btc_backed_ratio_percent:
+              type: number
+            other_supply_cents:
+              type: string
+        reserve_model:
+          type: object
+          properties:
+            type:
+              type: string
+            primary_reserve:
+              type: string
+            backing_requirement:
+              type: string
+            over_collateralization:
+              type: boolean
+            reserve_coverage_status:
+              type: string
+        interpretation:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Error message
+        details:
+          type: string
+          description: Stack trace (only in non-production environments)

@@ -41,8 +41,6 @@ RUN npm ci --only=production || npm install --only=production
 
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/api ./api
-COPY --from=builder /app/main.ts ./main.ts
 COPY --from=builder /app/public ./public
 
 # Copy environment template
@@ -71,4 +69,4 @@ ENV NODE_ENV=production \
 ENTRYPOINT ["dumb-init", "--"]
 
 # Run the production server
-CMD ["node", "main.ts"]
+CMD ["node", "dist/main.js"]
