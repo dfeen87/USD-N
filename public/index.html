@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USD-N Protocol - Deterministic Dollar Tender</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>USD-N Protocol</h1>
+            <p class="tagline">A Deterministic, Reserve-Constrained Dollar Tender</p>
+            <p class="subtitle">Governed by the FIDES Protocol</p>
+        </header>
+
+        <main>
+            <section class="info">
+                <h2>What is USD-N?</h2>
+                <p>USD-N is a <strong>digitally native monetary system</strong> that defines, enforces, and audits U.S. dollar-denominated tender under explicit, rule-based constraints.</p>
+                
+                <div class="principles">
+                    <h3>Core Principles</h3>
+                    <ul>
+                        <li><strong>Determinism First:</strong> Monetary outcomes are derived from explicit inputs</li>
+                        <li><strong>Constraint Over Discretion:</strong> Supply limited by reserves and policy invariants</li>
+                        <li><strong>Auditability by Construction:</strong> Every state transition is ledgered and replayable</li>
+                        <li><strong>Counter-Cyclical Discipline:</strong> Issuance tightens automatically during stress</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section class="simulation">
+                <h2>Live Protocol Simulation</h2>
+                <p>Experience the deterministic issuance and burn logic in action</p>
+                
+                <div class="controls">
+                    <button id="runSim" class="btn-primary">Run Simulation</button>
+                    <button id="resetSim" class="btn-secondary">Reset</button>
+                    <label>
+                        Steps: <input type="number" id="steps" value="12" min="1" max="100">
+                    </label>
+                </div>
+
+                <div class="status" id="status"></div>
+                
+                <div class="output">
+                    <h3>Event Log</h3>
+                    <pre id="eventLog"></pre>
+                </div>
+
+                <div class="metrics">
+                    <div class="metric-card">
+                        <h4>Current Supply</h4>
+                        <div class="metric-value" id="supply">$0.00</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>Reserve Coverage</h4>
+                        <div class="metric-value" id="coverage">0.00%</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>Total Events</h4>
+                        <div class="metric-value" id="events">0</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="info">
+                <h2>The Constraint Triangle</h2>
+                <div class="triangle-diagram">
+                    <pre class="ascii-art">
+               ┌──────────────┐
+               │   Bitcoin    │
+               │   (BTC)      │
+               │              │
+               │  External,   │
+               │  Non-Sovereign
+               │  Constraint  │
+               └──────▲───────┘
+                      │
+       Price, Stress, │  Observable Reality
+       Scarcity       │
+                      │
+┌──────────────┐     │       ┌──────────────┐
+│              │─────┼──────▶│              │
+│     USD      │     │       │    USD-N     │
+│              │◀────┼───────│              │
+│  Unit of     │  Validity & │  Deterministic
+│  Account     │  Discipline │  Validity Layer
+│              │             │              │
+└──────────────┘             └──────────────┘
+                    </pre>
+                </div>
+            </section>
+
+            <section class="info">
+                <h2>FIDES Protocol</h2>
+                <p><strong>Fiscal Integrity via Deterministic Economic Systems</strong></p>
+                <p>FIDES is the policy engine that governs USD-N, enforcing:</p>
+                <ul>
+                    <li>Reserve-constrained issuance</li>
+                    <li>Deterministic mint and burn semantics</li>
+                    <li>Counter-cyclical supply modulation</li>
+                    <li>Explicit rejection on invariant violation</li>
+                    <li>Full replay and audit of economic validity</li>
+                </ul>
+            </section>
+        </main>
+
+        <footer>
+            <p>USD-N is <strong>open source</strong> under the MIT License</p>
+            <p>This is a protocol demonstration. Not a financial product.</p>
+            <a href="https://github.com/dfeen87/USD-N" target="_blank">View on GitHub</a>
+        </footer>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
