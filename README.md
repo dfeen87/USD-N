@@ -224,6 +224,67 @@ The web interface provides:
 
 ---
 
+## REST API
+
+USD-N now includes a REST API for programmatic access to the protocol.
+
+### Starting the API Server
+
+```bash
+npm run serve
+```
+
+The server runs on `http://localhost:3000` and provides both the web interface and REST API.
+
+### Global Node Access
+
+The server maintains a single global USD-N node instance with shared ledger state. This allows multiple API clients to interact with the same protocol instance, demonstrating global node access patterns.
+
+### API Endpoints
+
+**Node Status:**
+- `GET /api/status` - Get node status and current state
+
+**Ledger Operations:**
+- `GET /api/ledger/supply` - Get current USD-N supply
+- `GET /api/ledger/events` - Get all ledger events (hash-chained)
+- `POST /api/ledger/reset` - Reset ledger (for testing)
+
+**FIDES Protocol:**
+- `POST /api/fides/step` - Execute a policy step with telemetry
+- `POST /api/fides/btc-issue` - Issue BTC-backed USD-N
+- `POST /api/fides/btc-burn` - Burn BTC-backed USD-N
+
+### Quick Example
+
+```bash
+# Check node status
+curl http://localhost:3000/api/status
+
+# Get current supply
+curl http://localhost:3000/api/ledger/supply
+
+# Execute a policy step
+curl -X POST http://localhost:3000/api/fides/step \
+  -H "Content-Type: application/json" \
+  -d '{
+    "telemetry": {
+      "at": "2024-01-01T00:00:00.000Z",
+      "cpi_yoy_bps": 250,
+      "gdp_qoq_bps": 200,
+      "unemployment_bps": 450
+    },
+    "reserves": { ... },
+    "stress": { ... }
+  }'
+```
+
+For complete API documentation and examples, see [API.md](./API.md).
+
+For a working example script, see [examples/api_example.js](./examples/api_example.js).
+
+---
+
 ## Status
 
 This repository defines the **core specification and canonical implementation** for USD-N.
@@ -233,7 +294,7 @@ This repository defines the **core specification and canonical implementation** 
 * Open specification
 * Designed for audit, simulation, and research
 * Intended for institutional-grade review
-* **Now accessible via web interface**
+* **Now accessible via web interface and REST API**
 
 ---
 
