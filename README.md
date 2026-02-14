@@ -198,7 +198,9 @@ See [API.md](./API.md) for complete API documentation.
 
 ### 4. Programmatic Usage (TypeScript/JavaScript)
 
-Create your own monetary policy scenarios programmatically:
+Create your own monetary policy scenarios programmatically.
+
+**Note:** The following examples assume you're running from the project root directory after building with `npm run build`.
 
 ```typescript
 import { Ledger } from './dist/src/engine/ledger.js';
@@ -1008,6 +1010,8 @@ node examples/production_api_test.js
 ### Creating Custom Scenarios
 
 Create a new file in the project:
+
+**Note:** Run this from the project root after building with `npm run build`.
 
 ```typescript
 // my-scenario.ts
