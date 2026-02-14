@@ -22,14 +22,19 @@
   - [REST API Usage](#rest-api-usage)
   - [Programmatic Usage](#programmatic-usage)
 - [Design Principles](#design-principles)
-- [The Constraint Triangle](#the-constraint-triangle)
+- [What USD-N Is](#what-usd-n-is)
+- [What USD-N Is Not](#what-usd-n-is-not)
 - [Reserve & Issuance Model](#reserve--issuance-model)
+- [Counter-Cyclical Supply Control](#counter-cyclical-supply-control)
 - [The FIDES Protocol](#the-fides-protocol)
+- [The Constraint Triangle](#the-constraint-triangle)
 - [API Reference](#api-reference)
 - [Deployment](#deployment)
 - [Development](#development)
 - [Architecture](#architecture)
 - [Documentation](#documentation)
+- [Troubleshooting](#troubleshooting)
+- [Status](#status)
 - [Philosophy](#philosophy)
 - [License](#license)
 
@@ -1121,6 +1126,101 @@ USD-N includes comprehensive documentation:
 - [OpenAPI Specification](./openapi.yaml) - Machine-readable API spec
 - [Citation](./CITATION.cff) - Academic citation format
 - [Examples](./examples/) - Working code examples
+
+---
+
+## Troubleshooting
+
+### Build Issues
+
+**Problem:** TypeScript compilation fails
+```bash
+npm run build
+# Error: Cannot find module...
+```
+
+**Solution:** Ensure you're using Node.js 20+ and TypeScript 5.6+:
+```bash
+node --version  # Should be v20.x or higher
+npm install     # Reinstall dependencies
+npm run build
+```
+
+---
+
+**Problem:** Module not found errors at runtime
+```bash
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '.../dist/...'
+```
+
+**Solution:** Make sure you've built the project first:
+```bash
+npm run build
+```
+
+### API Issues
+
+**Problem:** Server won't start / port already in use
+```bash
+Error: listen EADDRINUSE: address already in use :::3000
+```
+
+**Solution:** Either kill the existing process or use a different port:
+```bash
+# Kill existing process
+pkill -f "node server.js"
+
+# Or use a different port
+PORT=3001 npm run serve
+```
+
+---
+
+**Problem:** API returns 500 errors
+```bash
+{"error": "Internal server error"}
+```
+
+**Solution:** Check the server logs for details. Common issues:
+- Missing required fields in request body
+- Invalid data types (e.g., strings instead of numbers)
+- BTC reserves specified without BTC details
+
+### Simulation Issues
+
+**Problem:** Simulation shows only rejections
+```
+POLICY_REJECTED ISSUE :: POLICY_REJECT: stress-adjusted issue below minimum
+```
+
+**Solution:** This is expected behavior when:
+- Supply is 0 and CPI triggers expansion, but stress multiplier makes the issuance too small
+- CPI is high and triggers contraction, but supply is already 0
+- This demonstrates the protocol's conservative approach under stress
+
+### Common Questions
+
+**Q: Why does the simulation result in $0 supply?**
+
+A: The simulation uses conservative stress parameters that may reject small issuances. This demonstrates the protocol's safety features. Try running with different parameters or check the detailed event log.
+
+**Q: How do I reset the ledger when using the API?**
+
+A: Use the reset endpoint:
+```bash
+curl -X POST http://localhost:3000/api/ledger/reset
+```
+
+**Q: Can I use this in production?**
+
+A: USD-N is experimental and designed for research, audit, and demonstration. See [Status](#status) section for details.
+
+**Q: Where can I find more examples?**
+
+A: Check the [examples/](./examples/) directory for working code samples, including:
+- `api_example.js` - Full API workflow
+- `valid_history.jsonl` - Sample event log
+- `production_api_test.js` - Production API examples
 
 ---
 
