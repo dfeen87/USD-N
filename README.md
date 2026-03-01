@@ -36,6 +36,7 @@
 - [Troubleshooting](#troubleshooting)
 - [Status](#status)
 - [Philosophy](#philosophy)
+- [Acknowledgements](#acknowledgements)
 - [License](#license)
 
 ---
@@ -1264,7 +1265,13 @@ USD-N exists to demonstrate that monetary systems can be:
 
 ---
 
+## Acknowledgements
+
+This project was developed with a combination of original ideas, hands‑on coding, and support from advanced AI systems. I would like to acknowledge **Microsoft Copilot**, **Anthropic Claude**, and **OpenAI ChatGPT** for their meaningful assistance in refining concepts, improving clarity, and strengthening the overall quality of this work.
+
+---
+
 ## License
 
-**MIT License**
-Open by default. Forkable by design.
+MIT License - see [LICENSE](LICENSE) file for details
+
