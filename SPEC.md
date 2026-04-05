@@ -1,6 +1,6 @@
 # USD-N Specification
 
-**Version:** Draft v0.1  
+**Version:** v4.1.0
 **Status:** Canonical Protocol Implementation
 
 ---

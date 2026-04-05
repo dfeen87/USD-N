@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: USD-N Production REST API
-  version: 0.1.0
+  version: 4.1.0
   description: |
     Production-ready REST API for the USD-N Bitcoin-backed stablecoin protocol.
     
@@ -278,7 +278,7 @@ components:
           example: online
         version:
           type: string
-          example: 0.1.0
+          example: 4.1.0
         uptime_ms:
           type: integer
           example: 123456

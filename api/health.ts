@@ -8,16 +8,16 @@ import { Ledger } from '../src/engine/ledger.js';
 import { FIDES } from '../src/engine/fides.js';
 
 const startTime = Date.now();
-const VERSION = '0.1.0';
+const VERSION = '4.1.0';
 
 /**
  * GET /health - Basic health check
  */
 export function handleHealth(
-  req: IncomingMessage,
+  _req: IncomingMessage,
   res: ServerResponse,
-  ledger: Ledger,
-  fides: FIDES
+  _ledger: Ledger,
+  _fides: FIDES
 ): void {
   const data = {
     status: 'healthy',
@@ -33,10 +33,10 @@ export function handleHealth(
  * GET /status - Detailed node status
  */
 export function handleStatus(
-  req: IncomingMessage,
+  _req: IncomingMessage,
   res: ServerResponse,
   ledger: Ledger,
-  fides: FIDES
+  _fides: FIDES
 ): void {
   const supply = ledger.getSupply();
   const events = ledger.getEvents();

@@ -60,7 +60,7 @@ Custody, deployment, distribution, and user interfaces are explicitly out of sco
 
 ## Quick Start
 
-Get USD-N running in 3 minutes:
+Execute the following commands to initialize and build USD-N locally:
 
 ```bash
 # 1. Clone the repository
@@ -80,7 +80,7 @@ npm run verify
 npm run serve
 ```
 
-Then open your browser to `http://localhost:3000` to interact with USD-N.
+Access the local interface at `http://localhost:3000`.
 
 ---
 
@@ -126,7 +126,7 @@ USD-N can be used in several ways depending on your needs:
 
 ### 1. Run a Simulation (Command Line)
 
-The fastest way to see USD-N in action is to run a simulation:
+Execute a deterministic simulation of monetary policy scenarios:
 
 ```bash
 npm run verify
@@ -154,7 +154,7 @@ Start the interactive web interface:
 npm run serve
 ```
 
-Then navigate to `http://localhost:3000`. The web interface provides:
+Access the local interface at `http://localhost:3000`. Key features include:
 - Interactive protocol simulation
 - Real-time event logging
 - Live supply and reserve metrics
@@ -254,14 +254,14 @@ USD-N includes a built-in simulation tool that demonstrates how the protocol res
 npm run verify
 ```
 
-**What it does:**
+**Simulation Overview:**
 - Runs 12 policy steps
 - Simulates varying CPI (high → stable → low)
 - Demonstrates expansion during low inflation
 - Shows contraction during high inflation
 - Applies stress multipliers based on BTC volatility
 
-**Sample output:**
+**Example Output:**
 ```
 2024-01-01T00:00:00.000Z POLICY EXPANSION :: CPI below target (1.20% vs 2.00%)
 2024-01-01T00:00:00.000Z MINT $500.00 :: FIDES: Expansion (CPI below target)
@@ -286,12 +286,12 @@ npm run serve
 3. **Event Log**: View all ledger events with timestamps and hashes
 4. **Metrics Dashboard**: Monitor reserve coverage, BTC allocation, stress multipliers
 
-**Try this:**
-1. Start the server: `npm run serve`
-2. Open `http://localhost:3000`
-3. Click "Execute Policy Step"
-4. Adjust the CPI slider to see expansion/contraction
-5. View the event log to see deterministic policy decisions
+**Workflow:**
+1. Initialize server: `npm run serve`
+2. Navigate to `http://localhost:3000`
+3. Select "Execute Policy Step"
+4. Modulate the CPI parameter to observe expansion or contraction
+5. Inspect the event log for deterministic policy decisions
 
 ### REST API Usage
 
@@ -564,7 +564,7 @@ USD-N defines **monetary validity rules and invariants**, not financial products
 
 USD-N supply is constrained by **explicit reserve snapshots** and **policy invariants**.
 
-As of v2.0.0, the reference implementation supports:
+As of v4.1.0, the reference implementation supports:
 
 * **BTC-denominated reserve accounting**
 * **BTC/USD price snapshots** for deterministic valuation
@@ -1273,5 +1273,5 @@ This project was developed with a combination of original ideas, hands‑on codi
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details. This license permits commercial use, modification, distribution, and private use.
 

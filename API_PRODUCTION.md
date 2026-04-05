@@ -79,7 +79,7 @@ Detailed node status including version, uptime, and configuration.
 ```json
 {
   "status": "online",
-  "version": "0.1.0",
+  "version": "4.1.0",
   "uptime_ms": 123456,
   "uptime_human": "2h 3m",
   "config": {

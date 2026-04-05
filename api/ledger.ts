@@ -17,10 +17,10 @@ const MAX_TRANSFER_AMOUNT = 100_000_00n; // $100K max transfer per operation
  * GET /ledger/state - Get full ledger state snapshot
  */
 export async function handleLedgerState(
-  req: IncomingMessage,
+  _req: IncomingMessage,
   res: ServerResponse,
   ledger: Ledger,
-  fides: FIDES
+  _fides: FIDES
 ): Promise<void> {
   const supply = ledger.getSupply();
   const events = ledger.getEvents();
@@ -42,7 +42,7 @@ export async function handleLedgerTransactions(
   req: IncomingMessage,
   res: ServerResponse,
   ledger: Ledger,
-  fides: FIDES
+  _fides: FIDES
 ): Promise<void> {
   const url = new URL(req.url!, `http://${req.headers.host}`);
   const page = parseInt(url.searchParams.get('page') || '1', 10);
@@ -82,7 +82,7 @@ export async function handleLedgerMint(
   req: IncomingMessage,
   res: ServerResponse,
   ledger: Ledger,
-  fides: FIDES
+  _fides: FIDES
 ): Promise<void> {
   try {
     const body = await parseBody(req);
@@ -130,7 +130,7 @@ export async function handleLedgerBurn(
   req: IncomingMessage,
   res: ServerResponse,
   ledger: Ledger,
-  fides: FIDES
+  _fides: FIDES
 ): Promise<void> {
   try {
     const body = await parseBody(req);
@@ -187,7 +187,7 @@ export async function handleLedgerTransfer(
   req: IncomingMessage,
   res: ServerResponse,
   ledger: Ledger,
-  fides: FIDES
+  _fides: FIDES
 ): Promise<void> {
   try {
     const body = await parseBody(req);

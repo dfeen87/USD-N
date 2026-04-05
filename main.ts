@@ -42,7 +42,7 @@ const CONFIG = {
   JWT_SECRET: process.env.USDN_JWT_SECRET || '',
   LOG_LEVEL: process.env.USDN_LOG_LEVEL || 'info',
   NODE_ID: process.env.USDN_NODE_ID || `node-${Math.random().toString(36).substring(2, 11)}`,
-  VERSION: '0.1.0'
+  VERSION: '4.1.0'
 };
 
 // Validate configuration
