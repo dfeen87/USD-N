@@ -17,10 +17,10 @@ import { sendJSON } from './utils.js';
  * - Historical BTC-backed issuance/burn events
  */
 export async function handleBtcBacking(
-  req: IncomingMessage,
+  _req: IncomingMessage,
   res: ServerResponse,
   ledger: Ledger,
-  fides: FIDES
+  _fides: FIDES
 ): Promise<void> {
   const supply = ledger.getSupply();
   const events = ledger.getEvents();

@@ -18,12 +18,12 @@ import { sendJSON } from './utils.js';
  * - Stress test performance
  */
 export async function handleFidesScore(
-  req: IncomingMessage,
+  _req: IncomingMessage,
   res: ServerResponse,
   ledger: Ledger,
-  fides: FIDES
+  _fides: FIDES
 ): Promise<void> {
-  const supply = ledger.getSupply();
+  const _supply = ledger.getSupply(); // intentionally unused for now to match interface
   const events = ledger.getEvents();
   
   // Count event types for trust scoring
