@@ -247,7 +247,7 @@ const server = createServer(async (req, res) => {
     const resolvedPath = join(PUBLIC_DIR, filePath);
     
     // Security check: ensure the resolved path is within PUBLIC_DIR
-    if (!resolvedPath.startsWith(PUBLIC_DIR)) {
+    if (resolvedPath !== PUBLIC_DIR && !resolvedPath.startsWith(`${PUBLIC_DIR}/`)) {
       res.writeHead(403, { 'Content-Type': 'text/plain' });
       res.end('403 Forbidden');
       return;

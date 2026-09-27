@@ -9,6 +9,9 @@ export function makeReserveSnapshot(
   btc_value_usd: USD = 0n
 ): ReserveSnapshot {
   // simple split for now; later tie to weights + pricing feeds
+  if (total_value_usd < 0n || btc_value_usd < 0n) {
+    throw new Error("INVARIANT_FAIL: reserve values must be non-negative");
+  }
   if (btc_value_usd > total_value_usd) {
     throw new Error("INVARIANT_FAIL: BTC reserve exceeds total reserves");
   }

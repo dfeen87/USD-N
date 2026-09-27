@@ -117,10 +117,18 @@ export class FIDES {
       reason: string;
     };
 
+    let actionRecorded = false;
+
     try {
       assertValidReserveSnapshot(reserves);
       assertValidBtcPriceSnapshot(price_snapshot, at);
       assertValidBtcOwnershipProof(proof);
+
+      this.ledger.record({ type: "RESERVE_SNAPSHOT", at, snapshot: reserves });
+      produced.push({ type: "RESERVE_SNAPSHOT", at, snapshot: reserves });
+      this.ledger.record({ type: "POLICY_ACTION", at, action });
+      produced.push({ type: "POLICY_ACTION", at, action });
+      actionRecorded = true;
 
       const newSupply = this.ledger.getSupply() + actionAmount;
       assertBtcReserveCoverage(reserves, newSupply);
@@ -144,6 +152,10 @@ export class FIDES {
       });
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
+      if (!actionRecorded) {
+        this.ledger.record({ type: "POLICY_ACTION", at, action });
+        produced.push({ type: "POLICY_ACTION", at, action });
+      }
       this.ledger.record({ type: "POLICY_REJECTED", at, action, reason });
       produced.push({ type: "POLICY_REJECTED", at, action, reason });
     }
@@ -174,9 +186,17 @@ export class FIDES {
       reason: string;
     };
 
+    let actionRecorded = false;
+
     try {
       assertValidReserveSnapshot(reserves);
       assertValidBtcPriceSnapshot(price_snapshot, at);
+
+      this.ledger.record({ type: "RESERVE_SNAPSHOT", at, snapshot: reserves });
+      produced.push({ type: "RESERVE_SNAPSHOT", at, snapshot: reserves });
+      this.ledger.record({ type: "POLICY_ACTION", at, action });
+      produced.push({ type: "POLICY_ACTION", at, action });
+      actionRecorded = true;
 
       if (!reserves.btc) {
         throw new Error("INVARIANT_FAIL: btc reserve missing for burn");
@@ -204,6 +224,10 @@ export class FIDES {
       });
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
+      if (!actionRecorded) {
+        this.ledger.record({ type: "POLICY_ACTION", at, action });
+        produced.push({ type: "POLICY_ACTION", at, action });
+      }
       this.ledger.record({ type: "POLICY_REJECTED", at, action, reason });
       produced.push({ type: "POLICY_REJECTED", at, action, reason });
     }
