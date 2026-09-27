@@ -564,7 +564,7 @@ USD-N defines **monetary validity rules and invariants**, not financial products
 
 USD-N supply is constrained by **explicit reserve snapshots** and **policy invariants**.
 
-As of v4.1.0, the reference implementation supports:
+As of v4.2.0, the reference implementation supports:
 
 * **BTC-denominated reserve accounting**
 * **BTC/USD price snapshots** for deterministic valuation

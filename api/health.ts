@@ -8,7 +8,7 @@ import { Ledger } from '../src/engine/ledger.js';
 import { FIDES } from '../src/engine/fides.js';
 
 const startTime = Date.now();
-const VERSION = '4.1.0';
+const VERSION = '4.2.0';
 
 /**
  * GET /health - Basic health check
