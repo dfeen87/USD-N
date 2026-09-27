@@ -45,8 +45,9 @@ export async function handleLedgerTransactions(
   _fides: FIDES
 ): Promise<void> {
   const url = new URL(req.url!, `http://${req.headers.host}`);
-  const page = parseInt(url.searchParams.get('page') || '1', 10);
-  const perPage = Math.min(parseInt(url.searchParams.get('per_page') || '50', 10), 100);
+  const page = parsePositiveInteger(url.searchParams.get('page'), 1);
+  const requestedPerPage = parsePositiveInteger(url.searchParams.get('per_page'), 50);
+  const perPage = Math.min(requestedPerPage, 100);
   
   if (page < 1 || perPage < 1) {
     sendJSON(res, 400, { error: 'Invalid pagination parameters' });
@@ -73,6 +74,14 @@ export async function handleLedgerTransactions(
   };
   
   sendJSON(res, 200, data);
+}
+
+function parsePositiveInteger(value: string | null, fallback: number): number {
+  if (value === null) return fallback;
+  if (!/^\d+$/.test(value)) return 0;
+
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) ? parsed : 0;
 }
 
 /**

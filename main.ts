@@ -47,7 +47,7 @@ const CONFIG = {
 
 // Validate configuration
 function validateConfig() {
-  if (CONFIG.PORT < 1 || CONFIG.PORT > 65535) {
+  if (!Number.isInteger(CONFIG.PORT) || CONFIG.PORT < 1 || CONFIG.PORT > 65535) {
     throw new Error(`Invalid PORT: ${CONFIG.PORT}. Must be between 1 and 65535.`);
   }
   
@@ -340,7 +340,7 @@ const server = createServer(async (req, res) => {
     filePath = filePath.split('?')[0];
     const resolvedPath = join(PUBLIC_DIR, filePath);
     
-    if (!resolvedPath.startsWith(PUBLIC_DIR)) {
+    if (resolvedPath !== PUBLIC_DIR && !resolvedPath.startsWith(`${PUBLIC_DIR}/`)) {
       res.writeHead(403, { 'Content-Type': 'text/plain' });
       res.end('403 Forbidden');
       return;

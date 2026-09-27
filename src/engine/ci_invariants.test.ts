@@ -162,3 +162,27 @@ test("deterministic replay matches supply deltas", () => {
 
   assert.equal(replay.final_supply_cents, issueAmount - burnAmount);
 });
+
+test("BTC-backed operations produce self-contained, strictly replayable logs", () => {
+  const at = "2024-01-01T00:00:00Z";
+  const price_snapshot: BtcPriceSnapshot = {
+    price_usd: 50_000,
+    timestamp: Date.parse(at),
+    source: "unit-test"
+  };
+  const proof: BtcOwnershipProof = {
+    btc_address: "bc1qselfcontained",
+    message: "usd-n replay test",
+    signature: "cafebabe"
+  };
+  const reserves = buildBtcReserveSnapshot(at, 1, price_snapshot);
+  const ledger = new Ledger();
+  const fides = new FIDES(ledger);
+
+  fides.issueBtcBacked(at, reserves, 0.1, price_snapshot, proof);
+  fides.burnBtcBacked(at, reserves, 100_000n, price_snapshot);
+
+  const replay = verifyAndReplay(ledger.getEvents(), { strict: true });
+  assert.equal(replay.ok, true, replay.errors.join("\n"));
+  assert.equal(replay.final_supply_cents, ledger.getSupply());
+});
